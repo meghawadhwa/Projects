@@ -7,8 +7,9 @@
 //
 
 #define HORIZ_SWIPE_DRAG_MIN  50
-#define VERT_SWIPE_DRAG_MAX    4
-
+#define VERT_SWIPE_DRAG_MAX   3
+#define HORIZ_SWIPE_DRAG_MAX 5 
+#define VERT_SWIPE_DRAG_MIN 5
 #import "TDListCustomRow.h"
 
 @implementation TDListCustomRow
@@ -18,6 +19,9 @@
 @synthesize rightSwipeDetected,leftSwipeDetected;
 @synthesize strikedLabel;
 @synthesize currentRowColor;
+@synthesize PullDetected;
+@synthesize startPoint;
+
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -60,6 +64,11 @@
     rightSwipeDetected = NO;
     leftSwipeDetected = NO;
     self.currentRowColor = self.backgroundColor;
+    [[self superview] touchesBegan:touches withEvent:event];
+    PullDetected = NO;
+    
+    UITouch *touch = [touches anyObject];
+     startPoint = [touch locationInView:self];
 }
 
 
@@ -70,61 +79,77 @@
     CGPoint currentTouchPosition = [touch locationInView:self];
     CGPoint prevTouchPosition = [touch previousLocationInView:self];
     
-    
-    CGRect myFrame = self.frame;
-    float deltaX = currentTouchPosition.x - prevTouchPosition.x;
-    myFrame.origin.x += deltaX;
-    [self setFrame:myFrame];
-    
-    
-    UIImageView *deleteImgView = (UIImageView *)[self viewWithTag:100];
-    deleteImgView.frame =CGRectMake(self.frame.size.width +20,15, 24, 24);
-    
-    UIImageView *checkImgView = (UIImageView *)[self viewWithTag:101];
-    checkImgView.frame =CGRectMake(320 - self.frame.size.width - 30 ,15, 24, 24);  
-    
-    // To be a swipe, direction of touch must be horizontal and long enough.
-    if (fabsf(initialCentre.x - self.center.x) >= HORIZ_SWIPE_DRAG_MIN && fabsf(initialCentre.y - self.center.y) <= VERT_SWIPE_DRAG_MAX)
+    // to check for scrollView's touch 
+    if (fabsf(startPoint.x - currentTouchPosition.x) <= HORIZ_SWIPE_DRAG_MAX && fabsf(startPoint.y - currentTouchPosition.y) >= VERT_SWIPE_DRAG_MIN)
     {
-        // It appears to be a right swipe.
-                if (prevTouchPosition.x > currentTouchPosition.x)
-        {
-            NSLog(@" TO DEL :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
-            self.alpha =0.5;
-            rightSwipeDetected =YES;
-        }
- 
-  else
-        {
-            NSLog(@" TO CHECK :delta ,prev , current : %f , %f %f",initialCentre.x - currentTouchPosition.x,initialCentre.x,currentTouchPosition.x);
-            self.backgroundColor = [UIColor colorWithRed:0.082 green:0.71 blue:0.11 alpha:1]; 
-            [self makeStrikedLabel]; //TODO: make it non editable after checked
-             [self addSubview:self.strikedLabel];
-            leftSwipeDetected = YES;
-        }
+         PullDetected = YES;
+        [[self superview] touchesMoved:touches withEvent:event];
+    }
+      if(PullDetected == YES)
+    {
+        [[self superview] touchesMoved:touches withEvent:event];
     }
     else
     {
-        NSLog(@" else :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
-        if (rightSwipeDetected == YES)
-        {
-            NSLog(@"right");
-            self.alpha =1;
-            rightSwipeDetected =NO;
-        }
-        if(leftSwipeDetected == YES)
-        {
-            NSLog(@"here");
-            self.backgroundColor = self.currentRowColor; 
-            [self.strikedLabel removeFromSuperview];    
-            leftSwipeDetected = NO;
-        }
+        CGRect myFrame = self.frame;
+        float deltaX = currentTouchPosition.x - prevTouchPosition.x;
+        myFrame.origin.x += deltaX;
+        [self setFrame:myFrame];
         
+        
+        UIImageView *deleteImgView = (UIImageView *)[self viewWithTag:100];
+        deleteImgView.frame =CGRectMake(self.frame.size.width +20,15, 24, 24);
+        
+        UIImageView *checkImgView = (UIImageView *)[self viewWithTag:101];
+        checkImgView.frame =CGRectMake(320 - self.frame.size.width - 30 ,15, 24, 24);  
+        
+        // To be a swipe, direction of touch must be horizontal and long enough.
+        if (fabsf(initialCentre.x - self.center.x) >= HORIZ_SWIPE_DRAG_MIN && fabsf(initialCentre.y - self.center.y) <= VERT_SWIPE_DRAG_MAX)
+        {
+            // It appears to be a right swipe.
+                    if (prevTouchPosition.x > currentTouchPosition.x)
+            {
+                //NSLog(@" TO DEL :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
+                self.alpha =0.5;
+                rightSwipeDetected =YES;
+            }
+     
+      else
+            {
+                //NSLog(@" TO CHECK :delta ,prev , current : %f , %f %f",initialCentre.x - currentTouchPosition.x,initialCentre.x,currentTouchPosition.x);
+                self.backgroundColor = [UIColor colorWithRed:0.082 green:0.71 blue:0.11 alpha:1]; 
+                [self makeStrikedLabel]; //TODO: make it non editable after checked
+                 [self addSubview:self.strikedLabel];
+                leftSwipeDetected = YES;
+            }
+        }
+        else
+        {
+            NSLog(@" else :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
+            if (rightSwipeDetected == YES)
+            {
+                NSLog(@"right");
+                self.alpha =1;
+                rightSwipeDetected =NO;
+            }
+            if(leftSwipeDetected == YES)
+            {
+                NSLog(@"here");
+                self.backgroundColor = self.currentRowColor; 
+                [self.strikedLabel removeFromSuperview];    
+                leftSwipeDetected = NO;
+            }
+            
+        }
     }
 } 
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     
+    if (PullDetected == YES) {
+        [[self superview] touchesEnded:touches withEvent:event];
+        PullDetected = NO;
+    }
     if (rightSwipeDetected == YES)
         {
         [self customRowRightSwipe:touches withEvent:event];
@@ -142,6 +167,7 @@
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event 
 {
+    PullDetected = NO;
     rightSwipeDetected = NO;
     leftSwipeDetected = NO;
     [self setFrame:CGRectMake(0, self.frame.origin.y, ROW_WIDTH , ROW_HEIGHT)];

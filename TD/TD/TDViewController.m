@@ -86,11 +86,20 @@
 
 - (void)TDCustomViewPulledDownWithNewRow:(TDListCustomRow *)newRow
 {
+    static int listId = 7;
     ToDoList *newList = [[ToDoList alloc] init];
     newList.listName = newRow.listNameButton.text;
-    ToDoList *firstList = [self.listArray objectAtIndex:0];
-    ToDoList *lastList = [self.listArray lastObject];
-    newList.listId =(lastList.listId >firstList.listId ? lastList.listId :firstList.listId)+1;   // greater of first/last 
+    if ([self.listArray count]!=0) {
+        ToDoList *firstList = [self.listArray objectAtIndex:0];
+        ToDoList *lastList = [self.listArray lastObject];
+        newList.listId =(lastList.listId >firstList.listId ? lastList.listId :firstList.listId)+1;   
+    }
+    else
+    {
+        newList.listId = listId;
+        listId ++;
+    }
+    // greater of first/last 
     newList.createdAtDate = [NSDate date];
     newList.updatedAtDate = [NSDate date];
     

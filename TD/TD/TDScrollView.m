@@ -54,6 +54,9 @@ static float rotationAngle; // global variable
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event 
 {
+    if (self.overlayView) {
+        return;
+    }
     initialCentre = self.center;
     pullDownDetected = FALSE;
     pullUpDetected = FALSE;
@@ -64,6 +67,9 @@ static float rotationAngle; // global variable
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event 
 {
+    if (self.overlayView) {
+        return;
+    }
     UITouch *touch = [touches anyObject];
     
     CGPoint currentTouchPosition = [touch locationInView:self];
@@ -108,13 +114,13 @@ static float rotationAngle; // global variable
     {
         if (prevTouchPosition.y > currentTouchPosition.y)  // PULL UP
         {
-            NSLog(@" TO DEL :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
+            NSLog(@" PULL UP :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
             pullUpDetected = TRUE;
             NSLog(@"pullUpDetected %i",pullUpDetected);
         }
         else
         {
-            NSLog(@" TO DEL :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
+            NSLog(@" PULL DOWN :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
             pullDownDetected = TRUE;
             
             NSLog(@"pullDownDetected %i",pullDownDetected);
@@ -150,12 +156,14 @@ static float rotationAngle; // global variable
 }
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event 
 {
-   
-    if (pullUpDetected) {
+    if (self.overlayView) {
+        return;
+    }
+    if (pullUpDetected == YES) {
         [self customViewPullUpDetected:touches withEvent:event];
         [self setFrame:CGRectMake(0, 0, SCROLLVIEW_WIDTH, SCROLLVIEW_HEIGHT)];
     }
-    else if (pullDownDetected){
+    else if (pullDownDetected == YES){
         [self customViewPullDownDetected:touches withEvent:event];
          NSLog(@" angle : %f ",rotationAngle);
     }

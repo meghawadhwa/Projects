@@ -18,8 +18,10 @@
 @property(nonatomic,retain) UITextField *listNameButton;
 @property(assign) id<TDCustomRowSwipedDelegate> delegate;
 @property(nonatomic) CGPoint initialCentre;
+@property(nonatomic) CGPoint startPoint;
 @property(nonatomic,assign) BOOL leftSwipeDetected;
 @property(nonatomic,assign) BOOL rightSwipeDetected;
+@property(nonatomic,assign) BOOL PullDetected;
 @property(nonatomic,retain) TDStrikedLabel *strikedLabel;
 @property(nonatomic,retain)UIColor *currentRowColor;
 - (void)makeStrikedLabel;
