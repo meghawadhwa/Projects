@@ -16,6 +16,8 @@
 @synthesize delegate;
 @synthesize initialCentre;
 @synthesize rightSwipeDetected,leftSwipeDetected;
+@synthesize strikedLabel;
+@synthesize currentRowColor;
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -42,7 +44,7 @@
         self.listNameButton = nameButton;
         [self addSubview:self.listNameButton];
         NSLog(@"here");
-        
+        self.currentRowColor = self.backgroundColor;
         [self setUserInteractionEnabled:YES];
         [self  makeDeleteIcon];
         [self makeCheckedIcon];
@@ -57,6 +59,7 @@
     initialCentre = self.center;
     rightSwipeDetected = NO;
     leftSwipeDetected = NO;
+    self.currentRowColor = self.backgroundColor;
 }
 
 
@@ -67,18 +70,19 @@
     CGPoint currentTouchPosition = [touch locationInView:self];
     CGPoint prevTouchPosition = [touch previousLocationInView:self];
     
+    
     CGRect myFrame = self.frame;
     float deltaX = currentTouchPosition.x - prevTouchPosition.x;
     myFrame.origin.x += deltaX;
-    
     [self setFrame:myFrame];
+    
     
     UIImageView *deleteImgView = (UIImageView *)[self viewWithTag:100];
     deleteImgView.frame =CGRectMake(self.frame.size.width +20,15, 24, 24);
     
     UIImageView *checkImgView = (UIImageView *)[self viewWithTag:101];
     checkImgView.frame =CGRectMake(320 - self.frame.size.width - 30 ,15, 24, 24);  
- 
+    
     // To be a swipe, direction of touch must be horizontal and long enough.
     if (fabsf(initialCentre.x - self.center.x) >= HORIZ_SWIPE_DRAG_MIN && fabsf(initialCentre.y - self.center.y) <= VERT_SWIPE_DRAG_MAX)
     {
@@ -88,30 +92,52 @@
             NSLog(@" TO DEL :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
             self.alpha =0.5;
             rightSwipeDetected =YES;
-           
         }
  
   else
         {
             NSLog(@" TO CHECK :delta ,prev , current : %f , %f %f",initialCentre.x - currentTouchPosition.x,initialCentre.x,currentTouchPosition.x);
             self.backgroundColor = [UIColor colorWithRed:0.082 green:0.71 blue:0.11 alpha:1]; 
-            [self makeStrikedLabel];    //TODO: make it non editable after checked
+            [self makeStrikedLabel]; //TODO: make it non editable after checked
+             [self addSubview:self.strikedLabel];
             leftSwipeDetected = YES;
         }
+    }
+    else
+    {
+        NSLog(@" else :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
+        if (rightSwipeDetected == YES)
+        {
+            NSLog(@"right");
+            self.alpha =1;
+            rightSwipeDetected =NO;
+        }
+        if(leftSwipeDetected == YES)
+        {
+            NSLog(@"here");
+            self.backgroundColor = self.currentRowColor; 
+            [self.strikedLabel removeFromSuperview];    
+            leftSwipeDetected = NO;
+        }
+        
     }
 } 
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event {
     
-    if (rightSwipeDetected)
+    if (rightSwipeDetected == YES)
         {
         [self customRowRightSwipe:touches withEvent:event];
         }
-    else if(leftSwipeDetected)
+    else if(leftSwipeDetected == YES)
         {
         [self customRowLeftSwipe:touches withEvent:event];  
+        [self setFrame:CGRectMake(0, self.frame.origin.y, ROW_WIDTH, ROW_HEIGHT)];    
         }
-    [self setFrame:CGRectMake(0, self.frame.origin.y, ROW_WIDTH, ROW_HEIGHT)];
+    else{
+        [self setFrame:CGRectMake(0, self.frame.origin.y, ROW_WIDTH, ROW_HEIGHT)];  
+    }
+    
 }
 
 - (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event 
@@ -124,7 +150,7 @@
 - (void)customRowRightSwipe:(NSSet *)touches withEvent:(UIEvent*)event
 {
     self.alpha = 0.9;
-    [self performSelector:@selector(deleteRow) withObject:nil afterDelay:0.4];
+    [self performSelector:@selector(deleteRow) withObject:nil afterDelay:0];
 }
 
 - (void)customRowLeftSwipe:(NSSet *)touches withEvent:(UIEvent *)event
@@ -138,16 +164,16 @@
 
 - (void)checkRow
 {
-    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:)])
+    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)])
     {
-    [delegate TDCustomRowToBeDeleted:FALSE WithId:self.tag ];
+    [delegate TDCustomRowToBeDeleted:FALSE WithId:self.tag bySwipe:NO ];
     }
 }
 - (void)deleteRow
 {
-    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:)])
+    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)])
     {
-    [delegate TDCustomRowToBeDeleted:TRUE WithId:self.tag ];
+    [delegate TDCustomRowToBeDeleted:TRUE WithId:self.tag bySwipe:YES];
     }
 }
 
@@ -157,10 +183,15 @@
     //calculate the width of text in textfield
     CGSize textSize = [[listNameButton text] sizeWithFont:[listNameButton font]];
     CGFloat strikeWidth = textSize.width;
+    
+    if (self.strikedLabel) {
+        [self.strikedLabel setFrame: CGRectMake(self.listNameButton.frame.origin.x, self.listNameButton.frame.origin.y, strikeWidth, self.listNameButton.frame.size.height)];
+        return;
+    }
+    
     //create the striked label with calculated text width
-    TDStrikedLabel * strikedLabel = [[TDStrikedLabel alloc] initWithFrame:CGRectMake(self.listNameButton.frame.origin.x, self.listNameButton.frame.origin.y, strikeWidth, self.listNameButton.frame.size.height)];
-    strikedLabel.backgroundColor = [UIColor clearColor];
-    [self addSubview:strikedLabel];
+    self.strikedLabel = [[TDStrikedLabel alloc] initWithFrame:CGRectMake(self.listNameButton.frame.origin.x, self.listNameButton.frame.origin.y, strikeWidth, self.listNameButton.frame.size.height)];
+    self.strikedLabel.backgroundColor = [UIColor clearColor];
 }
 
 - (void)makeCheckedIcon
@@ -183,11 +214,29 @@
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
     [self.listNameButton resignFirstResponder];
+    if ([self.listNameButton.text isEqualToString:@""] && [delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)]) {
+        [delegate TDCustomRowToBeDeleted:YES WithId:self.tag bySwipe:YES];
+    }
+    else
+    {
+        TDScrollView * superView = (TDScrollView *)[self superview];
+        if (superView.overlayView != nil) 
+        {
+            [superView overlayViewTapped];       
+        }
+        else
+        {
+            // TODO: update Web SErvice and update the list View array
+        }
+    }
     return YES;
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
+    if ([self.listNameButton.text isEqualToString:@""]) {
+        self.listNameButton.enablesReturnKeyAutomatically= YES;
+    }
 }
 
 

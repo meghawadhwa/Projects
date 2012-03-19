@@ -22,6 +22,7 @@
 		E600F5A915065418007C477D /* TDListCustomRow.m in Sources */ = {isa = PBXBuildFile; fileRef = E600F5A815065418007C477D /* TDListCustomRow.m */; };
 		E61A5D0D1509D4C9001D4072 /* TDStrikedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = E61A5D0C1509D4C9001D4072 /* TDStrikedLabel.m */; };
 		E67B1C19150F68110049E212 /* TDCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = E67B1C18150F68110049E212 /* TDCommon.m */; };
+		E6CF467415120CE600217B7A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6CF467315120CE600217B7A /* QuartzCore.framework */; };
 		E6DF60C615074CF000EF6177 /* check.png in Resources */ = {isa = PBXBuildFile; fileRef = E6DF60C415074CF000EF6177 /* check.png */; };
 		E6DF60C715074CF000EF6177 /* delete.png in Resources */ = {isa = PBXBuildFile; fileRef = E6DF60C515074CF000EF6177 /* delete.png */; };
 /* End PBXBuildFile section */
@@ -55,6 +56,7 @@
 		E67B1C17150F68110049E212 /* TDCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDCommon.h; sourceTree = "<group>"; };
 		E67B1C18150F68110049E212 /* TDCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDCommon.m; sourceTree = "<group>"; };
 		E67B1C1B150F68220049E212 /* TDConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDConstants.h; sourceTree = "<group>"; };
+		E6CF467315120CE600217B7A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		E6DF60C415074CF000EF6177 /* check.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = check.png; sourceTree = "<group>"; };
 		E6DF60C515074CF000EF6177 /* delete.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = delete.png; sourceTree = "<group>"; };
 		E6DF60C9150751E700EF6177 /* TDDelegates.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDDelegates.h; sourceTree = "<group>"; };
@@ -65,6 +67,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E6CF467415120CE600217B7A /* QuartzCore.framework in Frameworks */,
 				E600F5621505F8DC007C477D /* UIKit.framework in Frameworks */,
 				E600F5641505F8DC007C477D /* Foundation.framework in Frameworks */,
 				E600F5661505F8DC007C477D /* CoreGraphics.framework in Frameworks */,
@@ -77,6 +80,7 @@
 		E600F5521505F8DC007C477D = {
 			isa = PBXGroup;
 			children = (
+				E6CF467315120CE600217B7A /* QuartzCore.framework */,
 				E600F5671505F8DC007C477D /* TD */,
 				E600F5601505F8DC007C477D /* Frameworks */,
 				E600F55E1505F8DC007C477D /* Products */,

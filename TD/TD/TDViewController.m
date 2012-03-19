@@ -15,7 +15,8 @@
 
 @interface TDViewController(privateMethods)
 - (void)createUI;
-- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
+- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag bySwipe:(BOOL)Flag
+;
 - (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
 - (void)shiftRowsFromIndex:(int)index;
 - (void)shiftRowsBackFromIndex:(int)index;
@@ -47,7 +48,8 @@
 }
 #pragma mark -Delegates
 
-- (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId
+- (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId bySwipe:(BOOL)Flag
+
 {
     int numberOfviews = [self.customViewsArray count];
     NSMutableArray *swipedIndexArray = [[NSMutableArray alloc] init];
@@ -58,7 +60,7 @@
         if(senderId == currentView.tag){  [swipedIndexArray addObject:[NSNumber numberWithInt:index]]; }   
     }
     if ([swipedIndexArray count]>0) {
-        [self rearrangeRowsAfterRemovingObjectAtIndex:swipedIndexArray withDeletionFlag:flag];
+        [self rearrangeRowsAfterRemovingObjectAtIndex:swipedIndexArray withDeletionFlag:flag bySwipe:Flag];
         // TODO: remove from Server also.
     }
 }
@@ -77,19 +79,45 @@
         }
     }
     if ([checkedIndexArray count]>0) {
-        [self rearrangeRowsAfterRemovingObjectAtIndex:checkedIndexArray withDeletionFlag:YES];
+        [self rearrangeRowsAfterRemovingObjectAtIndex:checkedIndexArray withDeletionFlag:YES bySwipe:NO];
         // TODO: remove from Server also.
     }
 }
 
-- (void)TDCustomViewPulledDown
+- (void)TDCustomViewPulledDownWithNewRow:(TDListCustomRow *)newRow
 {
-    [self shiftRowsFromIndex:0];
+    ToDoList *newList = [[ToDoList alloc] init];
+    newList.listName = newRow.listNameButton.text;
+    ToDoList *firstList = [self.listArray objectAtIndex:0];
+    ToDoList *lastList = [self.listArray lastObject];
+    newList.listId =(lastList.listId >firstList.listId ? lastList.listId :firstList.listId)+1;   // greater of first/last 
+    newList.createdAtDate = [NSDate date];
+    newList.updatedAtDate = [NSDate date];
+    
+    // TODO: WEB SERVICE TO ADD A LIST NEW :
+    NSMutableArray *tempArray = [[NSMutableArray alloc] initWithObjects:newList, nil];
+    [tempArray addObjectsFromArray:self.listArray];
+    self.listArray = nil;
+    self.listArray = tempArray;
+    tempArray = nil;
+    
+    tempArray = [[NSMutableArray alloc] initWithObjects:newRow, nil];
+    newRow.tag = newList.listId; 
+    newRow.delegate = self;
+    [tempArray addObjectsFromArray:self.customViewsArray];
+    self.customViewsArray = nil;
+    self.customViewsArray = tempArray;
+    tempArray = nil;
+    
+    
+    //[self shiftRowsFromIndex:0];
 }
+
 - (void)shiftRowsFromIndex:(int)index
 {
     // rearrange after the new row is added
 }
+
 - (void)shiftRowsBackFromIndex:(int)index
 {
     int lastObjectIndex = [self.customViewsArray count]-1;
@@ -107,7 +135,7 @@
 }
 
 #pragma mark - UI
-- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag
+- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag bySwipe:(BOOL)Flag
 {
     NSLog(@"array here %@",self.customViewsArray);
     int lastObjectIndex = [indexArray count] -1;
@@ -119,9 +147,15 @@
         
         if (flag == TRUE)     // deleted row to be removed from view
         {
-            [UIView animateWithDuration:0.5 animations:^{
-                RowToBeMoved.alpha =0;
-                [RowToBeMoved removeFromSuperview]; }];
+            [UIView animateWithDuration:0.3 animations:^{
+                if (Flag == YES) {
+                RowToBeMoved.frame = CGRectMake(-ROW_WIDTH, RowToBeMoved.frame.origin.y, ROW_WIDTH, ROW_HEIGHT);
+                }
+                else{
+                    RowToBeMoved.frame = CGRectMake(0, 480, ROW_WIDTH, ROW_HEIGHT);
+            }
+                 }];
+            [RowToBeMoved performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.3];
         }   
         
         
@@ -131,9 +165,11 @@
             {
                 TDListCustomRow *Row = [self.customViewsArray objectAtIndex:i];
                 TDListCustomRow *previousRow = [self.customViewsArray objectAtIndex:i-1];
-                [UIView animateWithDuration:0.8 animations:^{
-                Row.frame = CGRectMake(0, previousRow.frame.origin.y, previousRow.frame.size.width, previousRow.frame.size.height);
-                }]; 
+                float delay;
+                if (flag == TRUE) { delay = 0.3; } 
+                else {delay =0.0;}
+                [UIView animateWithDuration:0.8 delay:delay options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                    Row.frame = CGRectMake(0, previousRow.frame.origin.y, previousRow.frame.size.width, previousRow.frame.size.height);} completion:nil]; 
             }
         }
         if (flag == TRUE) {    // deleted row to be removed from custom views array
@@ -146,7 +182,7 @@
             TDListCustomRow *lastRow = [self.customViewsArray lastObject];
             
             [self.backgroundScrollView bringSubviewToFront:RowToBeMoved];
-            RowToBeMoved.frame =CGRectMake(0, lastRow.frame.origin.y + lastRow.frame.size.height + 1, RowToBeMoved.frame.size.width, RowToBeMoved.frame.size.height);
+            RowToBeMoved.frame =CGRectMake(0, lastRow.frame.origin.y + lastRow.frame.size.height, RowToBeMoved.frame.size.width, RowToBeMoved.frame.size.height);
             RowToBeMoved.backgroundColor = [UIColor colorWithRed:0.20 green:0.20 blue:0.20 alpha:1];
             }];
             RowToBeMoved.listNameButton.textColor = [UIColor grayColor];
@@ -173,7 +209,13 @@
         else
         {
             ToDoList *listToBeMoved = [self.listArray objectAtIndex:index];
-            listToBeMoved.doneStatus = TRUE;
+            if (listToBeMoved.doneStatus == TRUE) {
+                listToBeMoved.doneStatus =FALSE;
+            }
+            else
+            {
+                listToBeMoved.doneStatus = TRUE;
+            }
             [self.listArray removeObjectAtIndex:index];
             [self.listArray addObject:listToBeMoved];
                                             // TODO: update WEB SERVICE CALL
@@ -195,7 +237,7 @@
     {
         ToDoList *toDoList = [self.listArray objectAtIndex:i];
          static int y =0;
-         y= 60 *i + 1*i;
+        y= ROW_HEIGHT *i ;
         TDListCustomRow *row = [[TDListCustomRow alloc ] initWithFrame:CGRectMake(0, y,ROW_WIDTH , ROW_HEIGHT)];
         //[row.listNameButton setTitle:toDoList.listName forState:UIControlStateNormal];
         row.listNameButton.text = toDoList.listName;

@@ -7,16 +7,17 @@
 //
 
 #import <Foundation/Foundation.h>
+@class TDListCustomRow;
 
 @protocol TDDelegates <NSObject>
 
 @end
 
 @protocol TDCustomRowSwipedDelegate<NSObject>
-- (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId;
+- (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId bySwipe:(BOOL)Flag;
 @end
 
 @protocol TDCustomViewPulledDelegate<NSObject>
 - (void)TDCustomViewPulledUp;
-- (void)TDCustomViewPulledDown;
+- (void)TDCustomViewPulledDownWithNewRow:(TDListCustomRow *)newRow;
 @end
