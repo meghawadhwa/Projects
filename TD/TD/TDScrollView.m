@@ -112,23 +112,24 @@ static float rotationAngle; // global variable
     // To be a pull, direction of touch must be vertical and long enough.
     if (fabsf(initialCentre.y - self.center.y) >= VERT_PULL_DRAG_MIN && fabsf(initialCentre.x - self.center.x) <= HORIZ_SWIPE_DRAG_MAX)
     {
-        if (prevTouchPosition.y > currentTouchPosition.y)  // PULL UP
+        if (prevTouchPosition.y > currentTouchPosition.y && pullDownDetected == FALSE)  // PULL UP
         {
             NSLog(@" PULL UP :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
             pullUpDetected = TRUE;
+            startedpullingDownFlag = FALSE;
             NSLog(@"pullUpDetected %i",pullUpDetected);
         }
-        else
+        else if (prevTouchPosition.y < currentTouchPosition.y && pullUpDetected == FALSE)
         {
             NSLog(@" PULL DOWN :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
             pullDownDetected = TRUE;
-            
+            startedpullingDownFlag = TRUE;
             NSLog(@"pullDownDetected %i",pullDownDetected);
 
         }
         self.customNewRow.listNameButton.text= RELEASE_AFTER_PULL_TEXT;
     } 
-    else
+    else if(fabsf(initialCentre.y - self.center.y) < VERT_PULL_DRAG_MIN)
     {
         if (pullUpDetected == TRUE) {
             pullUpDetected = FALSE;

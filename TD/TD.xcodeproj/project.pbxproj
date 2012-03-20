@@ -331,11 +331,15 @@
 		E600F57C1505F8DC007C477D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: Megha Wadhwa (C9BKLU5SQ6)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Megha Wadhwa (C9BKLU5SQ6)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TD/TD-Prefix.pch";
 				INFOPLIST_FILE = "TD/TD-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "00F223CD-B85E-4C9C-A66F-69D3395F9D27";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "00F223CD-B85E-4C9C-A66F-69D3395F9D27";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -343,11 +347,15 @@
 		E600F57D1505F8DC007C477D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer: Megha Wadhwa (C9BKLU5SQ6)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Megha Wadhwa (C9BKLU5SQ6)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TD/TD-Prefix.pch";
 				INFOPLIST_FILE = "TD/TD-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 4.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "00F223CD-B85E-4C9C-A66F-69D3395F9D27";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "00F223CD-B85E-4C9C-A66F-69D3395F9D27";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

@@ -22,6 +22,7 @@
 @property(nonatomic,assign) BOOL leftSwipeDetected;
 @property(nonatomic,assign) BOOL rightSwipeDetected;
 @property(nonatomic,assign) BOOL PullDetected;
+@property(nonatomic,assign) BOOL swipeDetected;
 @property(nonatomic,retain) TDStrikedLabel *strikedLabel;
 @property(nonatomic,retain)UIColor *currentRowColor;
 - (void)makeStrikedLabel;

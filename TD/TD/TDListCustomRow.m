@@ -8,8 +8,8 @@
 
 #define HORIZ_SWIPE_DRAG_MIN  50
 #define VERT_SWIPE_DRAG_MAX   3
-#define HORIZ_SWIPE_DRAG_MAX 5 
-#define VERT_SWIPE_DRAG_MIN 5
+#define HORIZ_SWIPE_DRAG_MAX 2 
+#define VERT_SWIPE_DRAG_MIN 2
 #import "TDListCustomRow.h"
 
 @implementation TDListCustomRow
@@ -19,7 +19,7 @@
 @synthesize rightSwipeDetected,leftSwipeDetected;
 @synthesize strikedLabel;
 @synthesize currentRowColor;
-@synthesize PullDetected;
+@synthesize PullDetected,swipeDetected;
 @synthesize startPoint;
 
 - (id)initWithFrame:(CGRect)frame
@@ -38,7 +38,7 @@
          red -=(counter == 1)? 0.004:0.008;
         green += 0.028 +0.01 *counter;
         blue += (counter %2 == 0)? 0 :0.004;
-        UITextField *nameButton = [[UITextField alloc] initWithFrame:CGRectMake(10,15,frame.size.width,frame.size.height-35)];
+        UITextField *nameButton = [[UITextField alloc] initWithFrame:CGRectMake(10,15,frame.size.width -25,frame.size.height-30)];
         nameButton.enablesReturnKeyAutomatically =YES;
         nameButton.backgroundColor = [UIColor clearColor];
         nameButton.textColor =[UIColor whiteColor];
@@ -61,6 +61,7 @@
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event 
 {
     initialCentre = self.center;
+    swipeDetected = NO;
     rightSwipeDetected = NO;
     leftSwipeDetected = NO;
     self.currentRowColor = self.backgroundColor;
@@ -80,10 +81,22 @@
     CGPoint prevTouchPosition = [touch previousLocationInView:self];
     
     // to check for scrollView's touch 
-    if (fabsf(startPoint.x - currentTouchPosition.x) <= HORIZ_SWIPE_DRAG_MAX && fabsf(startPoint.y - currentTouchPosition.y) >= VERT_SWIPE_DRAG_MIN)
+    if( (rightSwipeDetected == YES) || (leftSwipeDetected == YES) || (swipeDetected == YES)){
+        PullDetected = NO;
+    }
+    else if(PullDetected == NO && swipeDetected == NO)
     {
-         PullDetected = YES;
-        [[self superview] touchesMoved:touches withEvent:event];
+        if (fabsf(startPoint.x - currentTouchPosition.x) <= HORIZ_SWIPE_DRAG_MAX && fabsf(startPoint.y - currentTouchPosition.y) >= VERT_SWIPE_DRAG_MIN)
+        {
+             PullDetected = YES;
+            swipeDetected = NO;
+            [[self superview] touchesMoved:touches withEvent:event];
+        }
+        else
+        {
+            swipeDetected = YES;
+            PullDetected = NO;
+        }
     }
       if(PullDetected == YES)
     {
@@ -107,20 +120,22 @@
         if (fabsf(initialCentre.x - self.center.x) >= HORIZ_SWIPE_DRAG_MIN && fabsf(initialCentre.y - self.center.y) <= VERT_SWIPE_DRAG_MAX)
         {
             // It appears to be a right swipe.
-                    if (prevTouchPosition.x > currentTouchPosition.x)
+                    if (prevTouchPosition.x > currentTouchPosition.x && leftSwipeDetected == NO)
             {
                 //NSLog(@" TO DEL :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
                 self.alpha =0.5;
                 rightSwipeDetected =YES;
+                PullDetected = NO;
             }
      
-      else
+      else  if (prevTouchPosition.x < currentTouchPosition.x && rightSwipeDetected == NO)
             {
                 //NSLog(@" TO CHECK :delta ,prev , current : %f , %f %f",initialCentre.x - currentTouchPosition.x,initialCentre.x,currentTouchPosition.x);
                 self.backgroundColor = [UIColor colorWithRed:0.082 green:0.71 blue:0.11 alpha:1]; 
                 [self makeStrikedLabel]; //TODO: make it non editable after checked
                  [self addSubview:self.strikedLabel];
                 leftSwipeDetected = YES;
+                PullDetected = NO;
             }
         }
         else

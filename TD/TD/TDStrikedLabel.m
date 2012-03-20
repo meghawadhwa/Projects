@@ -23,6 +23,7 @@
     [super drawTextInRect:rect];
     
     CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [UIColor whiteColor].CGColor);
     CGContextFillRect(context,CGRectMake(0,rect.size.height/2,rect.size.width,1));
 }
 
