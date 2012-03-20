@@ -88,7 +88,7 @@
 {
     static int listId = 7;
     ToDoList *newList = [[ToDoList alloc] init];
-    newList.listName = newRow.listNameButton.text;
+    newList.listName = newRow.listTextField.text;
     if ([self.listArray count]!=0) {
         ToDoList *firstList = [self.listArray objectAtIndex:0];
         ToDoList *lastList = [self.listArray lastObject];
@@ -194,7 +194,7 @@
             RowToBeMoved.frame =CGRectMake(0, lastRow.frame.origin.y + lastRow.frame.size.height, RowToBeMoved.frame.size.width, RowToBeMoved.frame.size.height);
             RowToBeMoved.backgroundColor = [UIColor colorWithRed:0.20 green:0.20 blue:0.20 alpha:1];
             }];
-            RowToBeMoved.listNameButton.textColor = [UIColor grayColor];
+            RowToBeMoved.listTextField.textColor = [UIColor grayColor];
             [self.customViewsArray addObject:RowToBeMoved];
         }
     }
@@ -248,8 +248,8 @@
          static int y =0;
         y= ROW_HEIGHT *i ;
         TDListCustomRow *row = [[TDListCustomRow alloc ] initWithFrame:CGRectMake(0, y,ROW_WIDTH , ROW_HEIGHT)];
-        //[row.listNameButton setTitle:toDoList.listName forState:UIControlStateNormal];
-        row.listNameButton.text = toDoList.listName;
+        //[row.listTextField setTitle:toDoList.listName forState:UIControlStateNormal];
+        row.listTextField.text = toDoList.listName;
         row.delegate = self;
         row.tag =toDoList.listId;
         NSLog(@" To Do List :%@,%i",toDoList.listName,y);

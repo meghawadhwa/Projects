@@ -21,6 +21,9 @@
 		E600F5A61506527F007C477D /* TDScrollView.m in Sources */ = {isa = PBXBuildFile; fileRef = E600F5A51506527F007C477D /* TDScrollView.m */; };
 		E600F5A915065418007C477D /* TDListCustomRow.m in Sources */ = {isa = PBXBuildFile; fileRef = E600F5A815065418007C477D /* TDListCustomRow.m */; };
 		E61A5D0D1509D4C9001D4072 /* TDStrikedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = E61A5D0C1509D4C9001D4072 /* TDStrikedLabel.m */; };
+		E66AC43F1518955500480B79 /* arrow.png in Resources */ = {isa = PBXBuildFile; fileRef = E66AC43C1518955500480B79 /* arrow.png */; };
+		E66AC4401518955500480B79 /* empty_box.png in Resources */ = {isa = PBXBuildFile; fileRef = E66AC43D1518955500480B79 /* empty_box.png */; };
+		E66AC4411518955500480B79 /* full_box.png in Resources */ = {isa = PBXBuildFile; fileRef = E66AC43E1518955500480B79 /* full_box.png */; };
 		E67B1C19150F68110049E212 /* TDCommon.m in Sources */ = {isa = PBXBuildFile; fileRef = E67B1C18150F68110049E212 /* TDCommon.m */; };
 		E6CF467415120CE600217B7A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E6CF467315120CE600217B7A /* QuartzCore.framework */; };
 		E6DF60C615074CF000EF6177 /* check.png in Resources */ = {isa = PBXBuildFile; fileRef = E6DF60C415074CF000EF6177 /* check.png */; };
@@ -53,6 +56,9 @@
 		E600F5A815065418007C477D /* TDListCustomRow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDListCustomRow.m; sourceTree = "<group>"; };
 		E61A5D0B1509D4C9001D4072 /* TDStrikedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDStrikedLabel.h; sourceTree = "<group>"; };
 		E61A5D0C1509D4C9001D4072 /* TDStrikedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDStrikedLabel.m; sourceTree = "<group>"; };
+		E66AC43C1518955500480B79 /* arrow.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = arrow.png; sourceTree = "<group>"; };
+		E66AC43D1518955500480B79 /* empty_box.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = empty_box.png; sourceTree = "<group>"; };
+		E66AC43E1518955500480B79 /* full_box.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = full_box.png; sourceTree = "<group>"; };
 		E67B1C17150F68110049E212 /* TDCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDCommon.h; sourceTree = "<group>"; };
 		E67B1C18150F68110049E212 /* TDCommon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TDCommon.m; sourceTree = "<group>"; };
 		E67B1C1B150F68220049E212 /* TDConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TDConstants.h; sourceTree = "<group>"; };
@@ -170,6 +176,9 @@
 		E6DF60C315074CF000EF6177 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				E66AC43C1518955500480B79 /* arrow.png */,
+				E66AC43D1518955500480B79 /* empty_box.png */,
+				E66AC43E1518955500480B79 /* full_box.png */,
 				E6DF60C415074CF000EF6177 /* check.png */,
 				E6DF60C515074CF000EF6177 /* delete.png */,
 			);
@@ -238,6 +247,9 @@
 				E600F5781505F8DC007C477D /* TDViewController.xib in Resources */,
 				E6DF60C615074CF000EF6177 /* check.png in Resources */,
 				E6DF60C715074CF000EF6177 /* delete.png in Resources */,
+				E66AC43F1518955500480B79 /* arrow.png in Resources */,
+				E66AC4401518955500480B79 /* empty_box.png in Resources */,
+				E66AC4411518955500480B79 /* full_box.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

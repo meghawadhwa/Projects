@@ -13,7 +13,7 @@
 #import "TDListCustomRow.h"
 
 @implementation TDListCustomRow
-@synthesize listNameButton;
+@synthesize listTextField;
 @synthesize delegate;
 @synthesize initialCentre;
 @synthesize rightSwipeDetected,leftSwipeDetected;
@@ -38,15 +38,15 @@
          red -=(counter == 1)? 0.004:0.008;
         green += 0.028 +0.01 *counter;
         blue += (counter %2 == 0)? 0 :0.004;
-        UITextField *nameButton = [[UITextField alloc] initWithFrame:CGRectMake(10,15,frame.size.width -25,frame.size.height-30)];
-        nameButton.enablesReturnKeyAutomatically =YES;
-        nameButton.backgroundColor = [UIColor clearColor];
-        nameButton.textColor =[UIColor whiteColor];
-        [nameButton setFont:[UIFont boldSystemFontOfSize:18]];
-        nameButton.delegate = self;
-        nameButton.returnKeyType = UIReturnKeyDone;
-        self.listNameButton = nameButton;
-        [self addSubview:self.listNameButton];
+        UITextField *listField = [[UITextField alloc] initWithFrame:CGRectMake(10,15,frame.size.width -25,frame.size.height-30)];
+        listField.enablesReturnKeyAutomatically =YES;
+        listField.backgroundColor = [UIColor clearColor];
+        listField.textColor =[UIColor whiteColor];
+        [listField setFont:[UIFont boldSystemFontOfSize:18]];
+        listField.delegate = self;
+        listField.returnKeyType = UIReturnKeyDone;
+        self.listTextField = listField;
+        [self addSubview:self.listTextField];
         NSLog(@"here");
         self.currentRowColor = self.backgroundColor;
         [self setUserInteractionEnabled:YES];
@@ -222,16 +222,16 @@
 - (void)makeStrikedLabel
 { 
     //calculate the width of text in textfield
-    CGSize textSize = [[listNameButton text] sizeWithFont:[listNameButton font]];
+    CGSize textSize = [[listTextField text] sizeWithFont:[listTextField font]];
     CGFloat strikeWidth = textSize.width;
     
     if (self.strikedLabel) {
-        [self.strikedLabel setFrame: CGRectMake(self.listNameButton.frame.origin.x, self.listNameButton.frame.origin.y, strikeWidth, self.listNameButton.frame.size.height)];
+        [self.strikedLabel setFrame: CGRectMake(self.listTextField.frame.origin.x, self.listTextField.frame.origin.y, strikeWidth, self.listTextField.frame.size.height)];
         return;
     }
     
     //create the striked label with calculated text width
-    self.strikedLabel = [[TDStrikedLabel alloc] initWithFrame:CGRectMake(self.listNameButton.frame.origin.x, self.listNameButton.frame.origin.y, strikeWidth, self.listNameButton.frame.size.height)];
+    self.strikedLabel = [[TDStrikedLabel alloc] initWithFrame:CGRectMake(self.listTextField.frame.origin.x, self.listTextField.frame.origin.y, strikeWidth, self.listTextField.frame.size.height)];
     self.strikedLabel.backgroundColor = [UIColor clearColor];
 }
 
@@ -254,8 +254,8 @@
 #pragma mark - text field delegates
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
-    [self.listNameButton resignFirstResponder];
-    if ([self.listNameButton.text isEqualToString:@""] && [delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)]) {
+    [self.listTextField resignFirstResponder];
+    if ([self.listTextField.text isEqualToString:@""] && [delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)]) {
         [delegate TDCustomRowToBeDeleted:YES WithId:self.tag bySwipe:YES];
     }
     else
@@ -275,8 +275,8 @@
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField
 {
-    if ([self.listNameButton.text isEqualToString:@""]) {
-        self.listNameButton.enablesReturnKeyAutomatically= YES;
+    if ([self.listTextField.text isEqualToString:@""]) {
+        self.listTextField.enablesReturnKeyAutomatically= YES;
     }
 }
 

@@ -13,7 +13,11 @@
 
 #define HORIZ_SWIPE_DRAG_MAX  4
 #define VERT_PULL_DRAG_MIN   55
+#define VERT_PULL_UP_DRAG_MIN 90
 #define DEGREE_TO_RADIAN 0.0174532925
+#define EMPTY_BOX [UIImage imageNamed:@"empty_box.png"]
+#define FULL_BOX [UIImage imageNamed:@"full_box.png"]
+
 @interface TDScrollView(privateMethods)
 - (void)customViewPullUpDetected:(NSSet *)touches withEvent:(UIEvent*)event;
 - (void)customViewPullDownDetected:(NSSet *)touches withEvent:(UIEvent *)event;
@@ -25,6 +29,8 @@
 - (void)createOverlay;
 - (void)overlayViewTapped;
 - (void)removeNewRow;
+- (void)createPullUpView;
+- (void)createArrowImageView;
 @end
 
 @implementation TDScrollView
@@ -37,7 +43,8 @@ static float rotationAngle; // global variable
 @synthesize RowAdded;
 @synthesize startedpullingDownFlag;
 @synthesize overlayView;
-
+@synthesize pullUpView,arrowImageView,boxImageView;
+@synthesize checkedRowsExist;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -83,25 +90,50 @@ static float rotationAngle; // global variable
     float scrolledDistanceY = self.center.y - initialCentre.y;
     //static float rotationAngle = 85.0f;
    
-    if (prevTouchPosition.y < currentTouchPosition.y) // PULL DOWN
-        {
-            if (rotationAngle >0) {
-                if (rotationAngle <3  || scrolledDistanceY >= VERT_PULL_DRAG_MIN) 
-                {
-                    rotationAngle = 0;
-                }
-                else{
-                rotationAngle = (85.0 - scrolledDistanceY *1.52);
-                }
-            }
-            startedpullingDownFlag = YES;
-        }
-    else  // PULL UP
-    {
-         if(scrolledDistanceY <= VERT_PULL_DRAG_MIN && startedpullingDownFlag == YES) //ROTATE back ONLY after REACHING THE MINIMUM DRAG POINT 
-         rotationAngle = (85.0 - scrolledDistanceY *1.52);
+    CGFloat originY = self.frame.origin.y;
+    if (originY >0) {
+        startedpullingDownFlag = YES;
     }
-    [self makeNewRow];
+    else
+    {
+        startedpullingDownFlag = NO;
+    }
+    
+    if (startedpullingDownFlag == YES) 
+    {
+        if (prevTouchPosition.y < currentTouchPosition.y && pullUpDetected == NO) // PULL DOWN
+            {
+                 [self makeNewRow];
+                if (rotationAngle >0) {
+                    if (rotationAngle <3  || scrolledDistanceY >= VERT_PULL_DRAG_MIN) 
+                    {
+                        rotationAngle = 0;
+                    }
+                    else{
+                    rotationAngle = (85.0 - scrolledDistanceY *1.52);
+                    }
+                }
+                
+            }
+        else if(prevTouchPosition.y > currentTouchPosition.y && pullUpDetected == NO) // PULL UP
+        {
+             if(scrolledDistanceY <= VERT_PULL_DRAG_MIN) //ROTATE back ONLY after REACHING THE MINIMUM DRAG POINT 
+             {rotationAngle = (85.0 - scrolledDistanceY *1.52);}
+            
+        }
+    }
+    else if(scrolledDistanceY <= VERT_PULL_UP_DRAG_MIN && startedpullingDownFlag == NO)
+    {
+        [self createPullUpView];
+        [self createArrowImageView];
+    }
+    
+    if (self.arrowImageView) {
+        CGRect arrowFrame = self.arrowImageView.frame;
+        arrowFrame.origin.y -= deltaY/4;
+        [self.arrowImageView setFrame:arrowFrame];
+    }
+    
     CALayer *layer = self.customNewRow.layer;
     layer.anchorPoint =CGPointMake(0.5, 1);
     CATransform3D rotationAndPerspectiveTransform = CATransform3DIdentity;
@@ -111,54 +143,50 @@ static float rotationAngle; // global variable
  
     // To be a pull, direction of touch must be vertical and long enough.
     if (fabsf(initialCentre.y - self.center.y) >= VERT_PULL_DRAG_MIN && fabsf(initialCentre.x - self.center.x) <= HORIZ_SWIPE_DRAG_MAX)
-    {
-        if (prevTouchPosition.y > currentTouchPosition.y && pullDownDetected == FALSE)  // PULL UP
+    { 
+        if (fabsf(initialCentre.y - self.center.y) >= VERT_PULL_UP_DRAG_MIN && prevTouchPosition.y > currentTouchPosition.y && pullDownDetected == FALSE)
         {
             NSLog(@" PULL UP :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
+            self.boxImageView.image = FULL_BOX;
+            self.arrowImageView.hidden = YES;
             pullUpDetected = TRUE;
             startedpullingDownFlag = FALSE;
             NSLog(@"pullUpDetected %i",pullUpDetected);
         }
-        else if (prevTouchPosition.y < currentTouchPosition.y && pullUpDetected == FALSE)
+        else if(fabsf(initialCentre.y - self.center.y) < VERT_PULL_UP_DRAG_MIN)
+        {
+            if (pullUpDetected == TRUE) {
+                pullUpDetected = FALSE;
+                self.arrowImageView.hidden = NO;
+                self.boxImageView.image = EMPTY_BOX;
+            }
+        } 
+        if (prevTouchPosition.y < currentTouchPosition.y && pullUpDetected == FALSE )
         {
             NSLog(@" PULL DOWN :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
             pullDownDetected = TRUE;
-            startedpullingDownFlag = TRUE;
             NSLog(@"pullDownDetected %i",pullDownDetected);
-
         }
-        self.customNewRow.listNameButton.text= RELEASE_AFTER_PULL_TEXT;
+        self.customNewRow.listTextField.text= RELEASE_AFTER_PULL_TEXT;
     } 
     else if(fabsf(initialCentre.y - self.center.y) < VERT_PULL_DRAG_MIN)
     {
-        if (pullUpDetected == TRUE) {
-            pullUpDetected = FALSE;
-        }
-        
-        if (pullDownDetected == TRUE) {
+        if (pullDownDetected == TRUE && (fabsf(initialCentre.y - self.center.y) < VERT_PULL_DRAG_MIN)) {
             pullDownDetected =FALSE;
         }
     }
 } 
 
-- (void)makeNewRow
-{
-     if (self.customNewRow) {
-        self.customNewRow.listNameButton.text =PULL_DOWN_TEXT;
-    return;
-    }  
-    TDListCustomRow * newRow;
-    if (self.customNewRow == nil) {
-       newRow = [[TDListCustomRow alloc]initWithFrame:CGRectMake(0,-ROW_HEIGHT + 27.5, ROW_WIDTH , ROW_HEIGHT)];
-       self.customNewRow = newRow;
-         self.customNewRow .listNameButton.text =PULL_DOWN_TEXT;
-         [self addSubview:self.customNewRow];
-   }
-}
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event 
 {
     if (self.overlayView) {
         return;
+    }
+    if (self.pullUpView) {
+        [self.pullUpView removeFromSuperview];
+        self.pullUpView = nil;
+        [self.arrowImageView removeFromSuperview];
+        self.arrowImageView = nil;
     }
     if (pullUpDetected == YES) {
         [self customViewPullUpDetected:touches withEvent:event];
@@ -173,9 +201,61 @@ static float rotationAngle; // global variable
     }
 }
 
+# pragma mark - PULL UP METHODS
+
+- (void)createArrowImageView
+{
+    if (self.arrowImageView != nil) {
+        return;
+    }
+    self.arrowImageView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"arrow.png"]];
+    self.arrowImageView.backgroundColor = [UIColor clearColor];
+    [self.arrowImageView setFrame:CGRectMake(105, 480, 10, 13)];
+    [self addSubview:self.arrowImageView];
+}
+
+- (void)createPullUpView
+{
+    if (self.pullUpView != nil) {
+        return;
+    }
+    self.boxImageView = [[UIImageView alloc] initWithImage:EMPTY_BOX];
+    self.boxImageView.backgroundColor = [UIColor clearColor];
+    [self.boxImageView setFrame:CGRectMake(0, 13, 22, 10)];
+                            
+    UILabel *pullUpLabel = [[UILabel alloc] initWithFrame:CGRectMake(30, 0, 100,30)];
+    pullUpLabel.text = @"Pull to Clear";
+    pullUpLabel.textAlignment = UITextAlignmentCenter;
+    pullUpLabel.textColor = [UIColor whiteColor];
+    pullUpLabel.backgroundColor = [UIColor clearColor];
+    pullUpLabel.font = [UIFont boldSystemFontOfSize:16];
+    
+    self.pullUpView = [[UIView alloc] initWithFrame:CGRectMake(100, 500, 130, 30)];
+    self.pullUpView.backgroundColor = [UIColor clearColor];
+    [self.pullUpView addSubview:pullUpLabel];
+    [self.pullUpView addSubview:self.boxImageView];
+    [self addSubview:self.pullUpView];
+}
+
+#pragma mark - PULL DOWN METHODS
+- (void)makeNewRow
+{
+    if (self.customNewRow) {
+        self.customNewRow.listTextField.text =PULL_DOWN_TEXT;
+        return;
+    }  
+    TDListCustomRow * newRow;
+    if (self.customNewRow == nil) {
+        newRow = [[TDListCustomRow alloc]initWithFrame:CGRectMake(0,-ROW_HEIGHT + 27.5, ROW_WIDTH , ROW_HEIGHT)];
+        self.customNewRow = newRow;
+        self.customNewRow .listTextField.text =PULL_DOWN_TEXT;
+        [self addSubview:self.customNewRow];
+    }
+}
+
 - (void)accomodateNewRowAndMakeItFirstResponder
-{   self.customNewRow.listNameButton.text = NO_TEXT;
-    [self.customNewRow.listNameButton becomeFirstResponder];
+{   self.customNewRow.listTextField.text = NO_TEXT;
+    [self.customNewRow.listTextField becomeFirstResponder];
     [self setFrame:CGRectMake(0,ROW_HEIGHT, SCROLLVIEW_WIDTH, SCROLLVIEW_HEIGHT)];
 }
 
@@ -201,10 +281,10 @@ static float rotationAngle; // global variable
     if (self.overlayView == nil) {
         return;
     }
-    [self.customNewRow.listNameButton resignFirstResponder];
+    [self.customNewRow.listTextField resignFirstResponder];
     [self.overlayView removeFromSuperview];
     self.overlayView = nil;
-    if ([self.customNewRow.listNameButton.text isEqualToString:NO_TEXT]) {
+    if ([self.customNewRow.listTextField.text isEqualToString:NO_TEXT]) {
         [self removeNewRow];
     }
     else
@@ -263,7 +343,6 @@ static float rotationAngle; // global variable
     [self accomodateNewRowAndMakeItFirstResponder];
     [self createOverlay];
     [self addOverlayView];
-    //[self performSelector:@selector(addNewItem) withObject:nil afterDelay:0.4];
 }
 
 

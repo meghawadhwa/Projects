@@ -15,7 +15,7 @@
 @class TDScrollView;
 @class TDStrikedLabel;
 @interface TDListCustomRow : UIView<UITextFieldDelegate>
-@property(nonatomic,retain) UITextField *listNameButton;
+@property(nonatomic,retain) UITextField *listTextField;
 @property(assign) id<TDCustomRowSwipedDelegate> delegate;
 @property(nonatomic) CGPoint initialCentre;
 @property(nonatomic) CGPoint startPoint;
