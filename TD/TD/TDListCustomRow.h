@@ -23,11 +23,15 @@
 @property(nonatomic,assign) BOOL rightSwipeDetected;
 @property(nonatomic,assign) BOOL PullDetected;
 @property(nonatomic,assign) BOOL swipeDetected;
+@property(nonatomic,assign) BOOL doneStatus;
 @property(nonatomic,retain) TDStrikedLabel *strikedLabel;
 @property(nonatomic,retain)UIColor *currentRowColor;
+@property(nonatomic,retain)UIView *doneOverlayView;
 - (void)makeStrikedLabel;
 - (void)makeCheckedIcon;
 - (void)customRowRightSwipe:(NSSet *)touches withEvent:(UIEvent*)event;
 - (void)customRowLeftSwipe:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)makeDeleteIcon;
+- (void)createDoneOverlayAtHeight:(float)height;
+- (void)doneOverlayViewTapped;
 @end

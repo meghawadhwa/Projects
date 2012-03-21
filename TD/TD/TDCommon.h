@@ -9,5 +9,7 @@
 #import <Foundation/Foundation.h>
 
 @interface TDCommon : NSObject
-
++(UIColor *)getColorByPriority:(int)prioirity;
++(UIColor *)getBlueColorByPriority:(int)prioirity;
++(UIColor *)getRedColorByPriority:(int)prioirity;
 @end

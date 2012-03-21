@@ -11,6 +11,7 @@
 #define HORIZ_SWIPE_DRAG_MAX 2 
 #define VERT_SWIPE_DRAG_MIN 2
 #import "TDListCustomRow.h"
+#import "TDCommon.h"
 
 @implementation TDListCustomRow
 @synthesize listTextField;
@@ -21,23 +22,13 @@
 @synthesize currentRowColor;
 @synthesize PullDetected,swipeDetected;
 @synthesize startPoint;
+@synthesize doneStatus;
+@synthesize  doneOverlayView;
 
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
     if (self) {
-        static int counter =1;
-        static float red = 0.067;// 0.851; //0.067;
-        static float green = 0.494; // 0.0;      //0.494;
-        static float blue = 0.980;// 0.086;       //0.980;
-        self.backgroundColor = [UIColor colorWithRed:red green:green blue:blue alpha:1];
-        counter += 1;
-        //red += 0.012;
-        //green +=0.113;
-        //blue += 0.004;
-         red -=(counter == 1)? 0.004:0.008;
-        green += 0.028 +0.01 *counter;
-        blue += (counter %2 == 0)? 0 :0.004;
         UITextField *listField = [[UITextField alloc] initWithFrame:CGRectMake(10,15,frame.size.width -25,frame.size.height-30)];
         listField.enablesReturnKeyAutomatically =YES;
         listField.backgroundColor = [UIColor clearColor];
@@ -47,8 +38,9 @@
         listField.returnKeyType = UIReturnKeyDone;
         self.listTextField = listField;
         [self addSubview:self.listTextField];
-        NSLog(@"here");
+        self.backgroundColor=[TDCommon getColorByPriority:1];  // default color value;
         self.currentRowColor = self.backgroundColor;
+        self.doneStatus = FALSE;
         [self setUserInteractionEnabled:YES];
         [self  makeDeleteIcon];
         [self makeCheckedIcon];
@@ -64,10 +56,9 @@
     swipeDetected = NO;
     rightSwipeDetected = NO;
     leftSwipeDetected = NO;
-    self.currentRowColor = self.backgroundColor;
     [[self superview] touchesBegan:touches withEvent:event];
     PullDetected = NO;
-    
+      self.currentRowColor = self.backgroundColor;
     UITouch *touch = [touches anyObject];
      startPoint = [touch locationInView:self];
 }
@@ -126,7 +117,6 @@
             // It appears to be a right swipe.
                     if (prevTouchPosition.x > currentTouchPosition.x && leftSwipeDetected == NO)
             {
-                //NSLog(@" TO DEL :delta ,prev , current : %f %f,%f",initialCentre.x - self.center.x,initialCentre.x,self.center.x);
                 self.alpha =0.5;
                 rightSwipeDetected =YES;
                 PullDetected = NO;
@@ -134,10 +124,20 @@
      
       else  if (prevTouchPosition.x < currentTouchPosition.x && rightSwipeDetected == NO)
             {
-                //NSLog(@" TO CHECK :delta ,prev , current : %f , %f %f",initialCentre.x - currentTouchPosition.x,initialCentre.x,currentTouchPosition.x);
+//                if (self.doneStatus == TRUE) {
+//                    self.backgroundColor = self.currentRowColor;
+//                    self.listTextField.textColor = [UIColor whiteColor];
+//                    [self.strikedLabel removeFromSuperview];
+//                    self.strikedLabel = nil;
+//                }
+//                else
+//                {
+//                self.listTextField.textColor = [UIColor grayColor];
+               // self.currentRowColor = self.backgroundColor;
                 self.backgroundColor = [UIColor colorWithRed:0.082 green:0.71 blue:0.11 alpha:1]; 
                 [self makeStrikedLabel]; //TODO: make it non editable after checked
                  [self addSubview:self.strikedLabel];
+//                }
                 leftSwipeDetected = YES;
                 PullDetected = NO;
             }
@@ -154,11 +154,11 @@
             if(leftSwipeDetected == YES)
             {
                 NSLog(@"here");
-                self.backgroundColor = self.currentRowColor; 
+                self.backgroundColor = self.currentRowColor;
+                self.listTextField.textColor = [UIColor whiteColor];
                 [self.strikedLabel removeFromSuperview];    
                 leftSwipeDetected = NO;
             }
-            
         }
     }
 } 
@@ -229,11 +229,10 @@
     CGSize textSize = [[listTextField text] sizeWithFont:[listTextField font]];
     CGFloat strikeWidth = textSize.width;
     
-    if (self.strikedLabel) {
+    if (self.strikedLabel !=nil) {
         [self.strikedLabel setFrame: CGRectMake(self.listTextField.frame.origin.x, self.listTextField.frame.origin.y, strikeWidth, self.listTextField.frame.size.height)];
         return;
     }
-    
     //create the striked label with calculated text width
     self.strikedLabel = [[TDStrikedLabel alloc] initWithFrame:CGRectMake(self.listTextField.frame.origin.x, self.listTextField.frame.origin.y, strikeWidth, self.listTextField.frame.size.height)];
     self.strikedLabel.backgroundColor = [UIColor clearColor];
@@ -269,11 +268,22 @@
         {
             [superView overlayViewTapped];       
         }
-        else
+        else if (self.doneOverlayView != nil) 
         {
+            [self doneOverlayViewTapped];
             // TODO: update Web SErvice and update the list View array
         }
+        else
+        {
+            TDScrollView * superView = (TDScrollView *)[self superview];
+            [UIView animateWithDuration:0.3 animations:^{
+                [superView setFrame:CGRectMake(0,0, SCROLLVIEW_WIDTH, SCROLLVIEW_HEIGHT)];
+            }];
+        }
     }
+    CGSize textSize = [[self.listTextField text] sizeWithFont:[self.listTextField font]];
+    [self.listTextField setFrame:CGRectMake(self.listTextField.frame.origin.x, self.listTextField.frame.origin.y, textSize.width, textSize.height)];
+    
     return YES;
 }
 
@@ -282,7 +292,36 @@
     if ([self.listTextField.text isEqualToString:@""]) {
         self.listTextField.enablesReturnKeyAutomatically= YES;
     }
+    TDScrollView * superView = (TDScrollView *)[self superview];
+    [UIView animateWithDuration:0.3 animations:^{
+        [superView setFrame:CGRectMake(0,0 - self.frame.origin.y, SCROLLVIEW_WIDTH, SCROLLVIEW_HEIGHT)];}];
+    if (superView.overlayView == nil) {
+    [self createDoneOverlayAtHeight:-superView.frame.origin.y + ROW_HEIGHT];
+    [superView addSubview:self.doneOverlayView];
+    }
 }
 
+- (void)createDoneOverlayAtHeight:(float)height
+{
+    if (self.doneOverlayView) {
+        return;
+    }
+    self.doneOverlayView = [[UIView alloc] initWithFrame:CGRectMake(0, height, ROW_WIDTH, 480)];
+    self.doneOverlayView.backgroundColor =[[UIColor blackColor] colorWithAlphaComponent:0.5];
+    UITapGestureRecognizer *tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doneOverlayViewTapped)]; 
+    [self.doneOverlayView addGestureRecognizer:tapGestureRecognizer];
+}
+
+- (void)doneOverlayViewTapped
+{
+    [self.listTextField resignFirstResponder];
+    [self.doneOverlayView removeFromSuperview];
+    self.doneOverlayView = nil;
+    
+    TDScrollView * superView = (TDScrollView *)[self superview];
+    [UIView animateWithDuration:0.3 animations:^{
+        [superView setFrame:CGRectMake(0,0, SCROLLVIEW_WIDTH, SCROLLVIEW_HEIGHT)];
+    }];
+}
 
 @end

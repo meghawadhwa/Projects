@@ -12,6 +12,7 @@
 #import "ToDoList.h"
 #import "TDScrollView.h"
 #import "TDListCustomRow.h"
+#import "TDCommon.h"
 
 @interface TDViewController(privateMethods)
 - (void)createUI;
@@ -20,6 +21,7 @@
 - (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
 - (void)shiftRowsFromIndex:(int)index;
 - (void)shiftRowsBackFromIndex:(int)index;
+- (void)rearrangeColorsBasedOnPrioirity; 
 @end
 
 @implementation TDViewController
@@ -134,8 +136,7 @@
     self.customViewsArray = tempArray;
     tempArray = nil;
     
-    
-    //[self shiftRowsFromIndex:0];
+    [self rearrangeColorsBasedOnPrioirity];
 }
 
 - (void)shiftRowsFromIndex:(int)index
@@ -160,6 +161,21 @@
 }
 
 #pragma mark - UI
+// Prioirity is based on Index,Higher Index Lesser Priority,Lesser Color
+- (void)rearrangeColorsBasedOnPrioirity 
+{
+    int totalRows = [self.customViewsArray count];
+    for (int i =0; i<totalRows; i++) 
+    {
+        ToDoList *aList = [self.listArray objectAtIndex:i];
+        if(aList.doneStatus == FALSE)
+        {
+        TDListCustomRow *aRow = [self.customViewsArray objectAtIndex:i];
+        aRow.backgroundColor = [TDCommon getColorByPriority:i+1];
+        }
+    }
+ 
+}
 - (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag bySwipe:(BOOL)Flag
 {
     NSLog(@"array here %@",self.customViewsArray);
@@ -214,7 +230,8 @@
             [self.customViewsArray addObject:RowToBeMoved];
         }
     }
-    [self rearrangeListObjectsAfterRemovingObjectAtIndex:indexArray withDeletionFlag:flag];
+       [self rearrangeListObjectsAfterRemovingObjectAtIndex:indexArray withDeletionFlag:flag];
+    [self rearrangeColorsBasedOnPrioirity];
      NSLog(@"array now %@",self.customViewsArray);
 }
 
@@ -235,7 +252,7 @@
         {
             ToDoList *listToBeMoved = [self.listArray objectAtIndex:index];
             if (listToBeMoved.doneStatus == TRUE) {
-                listToBeMoved.doneStatus =FALSE;
+               // listToBeMoved.doneStatus =FALSE;
             }
             else
             {
@@ -265,8 +282,10 @@
          static int y =0;
         y= ROW_HEIGHT *i ;
         TDListCustomRow *row = [[TDListCustomRow alloc ] initWithFrame:CGRectMake(0, y,ROW_WIDTH , ROW_HEIGHT)];
-        //[row.listTextField setTitle:toDoList.listName forState:UIControlStateNormal];
+        row.backgroundColor = [TDCommon getColorByPriority:i+1];
         row.listTextField.text = toDoList.listName;
+        CGSize textSize = [[row.listTextField text] sizeWithFont:[row.listTextField font]];
+        [row.listTextField setFrame:CGRectMake(row.listTextField.frame.origin.x, row.listTextField.frame.origin.y, textSize.width, textSize.height)];
         row.delegate = self;
         row.tag =toDoList.listId;
         NSLog(@" To Do List :%@,%i",toDoList.listName,y);
@@ -293,6 +312,7 @@
                 ToDoList *toDoList = [[ToDoList alloc] init];
                 NSDictionary *paramDict = [responseArray objectAtIndex:i];
                 [toDoList readFromDictionary:paramDict]; 
+                toDoList.doneStatus = FALSE;   //TOREMOVE
                 [self.listArray addObject:toDoList];
                 NSLog(@" To Do List :%@",self.listArray);
             }

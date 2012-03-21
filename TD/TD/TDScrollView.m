@@ -25,12 +25,11 @@
 - (void)makeNewRow;
 - (void)addNewRow;
 - (void)accomodateNewRowAndMakeItFirstResponder;
-- (void)addOverlayView;
-- (void)createOverlay;
-- (void)overlayViewTapped;
 - (void)removeNewRow;
 - (void)createPullUpView;
 - (void)createArrowImageView;
+- (void)addOverlayView;
+- (void)createOverlay;
 @end
 
 @implementation TDScrollView
@@ -137,6 +136,7 @@ static float rotationAngle; // global variable
             self.pullUpView.alpha = 0.2;
             return;
         }
+        
     }
     
     if (self.arrowImageView) {
@@ -144,14 +144,13 @@ static float rotationAngle; // global variable
         arrowFrame.origin.y -= deltaY/3.1;
         [self.arrowImageView setFrame:arrowFrame];
     }
-    
     CALayer *layer = self.customNewRow.layer;
     layer.anchorPoint =CGPointMake(0.5, 1);
     CATransform3D rotationAndPerspectiveTransform = CATransform3DIdentity;
     rotationAndPerspectiveTransform.m34 = 1.0 /- 120;     //m34(matrix value at 3 by 4) is the value of zDistance that affects the sharpness of the transform and lesser the value ,more sharper transformation across z axis.
     rotationAndPerspectiveTransform = CATransform3DRotate(rotationAndPerspectiveTransform, rotationAngle * M_PI / 180.0f,1.0f, 0.0f,0.0f);
     layer.transform = rotationAndPerspectiveTransform;
- 
+     
     // To be a pull, direction of touch must be vertical and long enough.
     if (fabsf(initialCentre.y - self.center.y) >= VERT_PULL_DRAG_MIN && fabsf(initialCentre.x - self.center.x) <= HORIZ_SWIPE_DRAG_MAX)
     { 
@@ -352,8 +351,9 @@ static float rotationAngle; // global variable
 
 - (void)customViewPullDownDetected:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    [self accomodateNewRowAndMakeItFirstResponder];
     [self createOverlay];
+    [self accomodateNewRowAndMakeItFirstResponder];
+    
     [self addOverlayView];
 }
 
