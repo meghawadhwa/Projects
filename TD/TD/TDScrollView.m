@@ -13,7 +13,7 @@
 
 #define HORIZ_SWIPE_DRAG_MAX  4
 #define VERT_PULL_DRAG_MIN   55
-#define VERT_PULL_UP_DRAG_MIN 90
+#define VERT_PULL_UP_DRAG_MIN 115
 #define DEGREE_TO_RADIAN 0.0174532925
 #define EMPTY_BOX [UIImage imageNamed:@"empty_box.png"]
 #define FULL_BOX [UIImage imageNamed:@"full_box.png"]
@@ -78,15 +78,18 @@ static float rotationAngle; // global variable
         return;
     }
     UITouch *touch = [touches anyObject];
-    
     CGPoint currentTouchPosition = [touch locationInView:self];
     CGPoint prevTouchPosition = [touch previousLocationInView:self];
     
+    float deltaY;
     CGRect myFrame = self.frame;
-    float deltaY = currentTouchPosition.y - prevTouchPosition.y;
+    deltaY = currentTouchPosition.y - prevTouchPosition.y;
+    if (pullDownDetected || pullUpDetected) {
+    deltaY = deltaY/DECELERATION_RATE;
+    }
     myFrame.origin.y += deltaY;
     [self setFrame:myFrame];
-    
+
     float scrolledDistanceY = self.center.y - initialCentre.y;
     //static float rotationAngle = 85.0f;
    
@@ -130,7 +133,7 @@ static float rotationAngle; // global variable
     
     if (self.arrowImageView) {
         CGRect arrowFrame = self.arrowImageView.frame;
-        arrowFrame.origin.y -= deltaY/4;
+        arrowFrame.origin.y -= deltaY/3.1;
         [self.arrowImageView setFrame:arrowFrame];
     }
     
@@ -161,7 +164,7 @@ static float rotationAngle; // global variable
                 self.boxImageView.image = EMPTY_BOX;
             }
         } 
-        if (prevTouchPosition.y < currentTouchPosition.y && pullUpDetected == FALSE )
+        if (prevTouchPosition.y < currentTouchPosition.y && startedpullingDownFlag == TRUE )
         {
             NSLog(@" PULL DOWN :delta ,prev , current : %f %f,%f",initialCentre.y - self.center.y,initialCentre.y,self.center.y);
             pullDownDetected = TRUE;
@@ -174,6 +177,7 @@ static float rotationAngle; // global variable
         if (pullDownDetected == TRUE && (fabsf(initialCentre.y - self.center.y) < VERT_PULL_DRAG_MIN)) {
             pullDownDetected =FALSE;
         }
+        self.customNewRow.listTextField.text= PULL_DOWN_TEXT;
     }
 } 
 
@@ -230,7 +234,7 @@ static float rotationAngle; // global variable
     pullUpLabel.backgroundColor = [UIColor clearColor];
     pullUpLabel.font = [UIFont boldSystemFontOfSize:16];
     
-    self.pullUpView = [[UIView alloc] initWithFrame:CGRectMake(100, 500, 130, 30)];
+    self.pullUpView = [[UIView alloc] initWithFrame:CGRectMake(100, 510, 130, 30)];
     self.pullUpView.backgroundColor = [UIColor clearColor];
     [self.pullUpView addSubview:pullUpLabel];
     [self.pullUpView addSubview:self.boxImageView];

@@ -15,4 +15,5 @@
 #define PULL_DOWN_TEXT @"Pull Down To Create Item"
 #define RELEASE_AFTER_PULL_TEXT @"Release to add Item"
 #define NO_TEXT @""
+#define DECELERATION_RATE 3
 #define IP 

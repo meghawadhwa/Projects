@@ -106,6 +106,10 @@
     {
         CGRect myFrame = self.frame;
         float deltaX = currentTouchPosition.x - prevTouchPosition.x;
+        if (rightSwipeDetected || leftSwipeDetected) // give decelleration effect
+        {
+            deltaX = deltaX/DECELERATION_RATE;
+        }
         myFrame.origin.x += deltaX;
         [self setFrame:myFrame];
         
