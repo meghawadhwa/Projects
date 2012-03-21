@@ -48,6 +48,22 @@
 }
 #pragma mark -Delegates
 
+- (BOOL)checkedRowsExist
+{
+    BOOL checkedRowFlag = FALSE;
+    int totalObjects = [self.listArray count];
+    for (int i =0; i<totalObjects; i++) 
+    {
+        ToDoList *aListItem = [self.listArray objectAtIndex:i];
+        if (aListItem.doneStatus == TRUE) 
+        {
+            checkedRowFlag = TRUE;
+            break;
+        }
+    }
+    return checkedRowFlag;
+}
+
 - (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId bySwipe:(BOOL)Flag
 
 {
@@ -264,7 +280,7 @@
 # pragma mark - FETCH  DATA FROM SERVER
 - (void)getDataFromServer
 {
-    NSDictionary * dict = [NSDictionary dictionaryWithContentsOfJSONURLString:@"http://localhost:3000/to_do_lists.json"];
+    NSDictionary * dict = [NSDictionary dictionaryWithContentsOfJSONURLString:IP];
     
     if (dict) 
     {

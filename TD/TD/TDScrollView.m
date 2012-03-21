@@ -84,7 +84,7 @@ static float rotationAngle; // global variable
     float deltaY;
     CGRect myFrame = self.frame;
     deltaY = currentTouchPosition.y - prevTouchPosition.y;
-    if (pullDownDetected || pullUpDetected) {
+    if (pullDownDetected || pullUpDetected || self.pullUpView.alpha <1) {
     deltaY = deltaY/DECELERATION_RATE;
     }
     myFrame.origin.y += deltaY;
@@ -128,7 +128,15 @@ static float rotationAngle; // global variable
     else if(scrolledDistanceY <= VERT_PULL_UP_DRAG_MIN && startedpullingDownFlag == NO)
     {
         [self createPullUpView];
-        [self createArrowImageView];
+        if ([delegate checkedRowsExist]) // checks If already checked rows exists
+        {
+            [self createArrowImageView];
+        }
+        else
+        {
+            self.pullUpView.alpha = 0.2;
+            return;
+        }
     }
     
     if (self.arrowImageView) {

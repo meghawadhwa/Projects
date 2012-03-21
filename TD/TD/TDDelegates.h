@@ -20,4 +20,5 @@
 @protocol TDCustomViewPulledDelegate<NSObject>
 - (void)TDCustomViewPulledUp;
 - (void)TDCustomViewPulledDownWithNewRow:(TDListCustomRow *)newRow;
+- (BOOL)checkedRowsExist;
 @end
