@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "TDViewController.h"
 
-@interface TDMainViewController : UIViewController
+@interface TDMainViewController : TDViewController
 
 @end

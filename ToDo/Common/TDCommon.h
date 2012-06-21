@@ -12,4 +12,7 @@
 +(UIColor *)getColorByPriority:(int)prioirity;
 +(UIColor *)getBlueColorByPriority:(int)prioirity;
 +(UIColor *)getRedColorByPriority:(int)prioirity;
++ (NSString *)getTheme;
++ (void)setTheme: (NSString *)myTheme;
+
 @end

@@ -19,4 +19,5 @@
 #define IP @"http://192.168.1.2:3000/to_do_lists.json"   //http://localhost:3000/to_do_lists.json
 #define THEME_BLUE @"Blue" 
 #define THEME_HEAT_MAP @"heatMap"
-#define CURRENT_THEME THEME_BLUE
+#define THEME_MAIN_GRAY @"Grey"
+

@@ -7,7 +7,8 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "TDViewController.h"
 
-@interface TDListViewController : UIViewController
+@interface TDListViewController : TDViewController<TDCustomRowTappedDelegate>
 
 @end

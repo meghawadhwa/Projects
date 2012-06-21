@@ -11,10 +11,15 @@
 #import "TDDelegates.h"
 #import "TDScrollView.h"
 #import "TDConstants.h"
+#import "TDCategory.h"
+#import "ToDoList.h"
+#import "TDScrollView.h"
+#import "TDListCustomRow.h"
+#import "TDCommon.h"
 
 @class TDScrollView;
 @class ToDoList;
-@interface TDViewController : UIViewController<TDCustomRowSwipedDelegate,UITextFieldDelegate,TDCustomViewPulledDelegate>
+@interface TDViewController : UIViewController<TDCustomRowSwipedDelegate,UITextFieldDelegate,TDCustomViewPulledDelegate,TDCustomRowTappedDelegate>
 @property(nonatomic,retain)TDScrollView *backgroundScrollView;
 @property(nonatomic,retain) NSMutableArray *listArray;
 @property(nonatomic,retain) NSMutableArray *customViewsArray;

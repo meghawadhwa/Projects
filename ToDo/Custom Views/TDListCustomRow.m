@@ -24,6 +24,7 @@
 @synthesize startPoint;
 @synthesize doneStatus;
 @synthesize  doneOverlayView;
+@synthesize tapDelegate;
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -44,8 +45,22 @@
         [self setUserInteractionEnabled:YES];
         [self  makeDeleteIcon];
         [self makeCheckedIcon];
+        UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(customRowTapped)];
+        [self addGestureRecognizer:tapGesture];
+        tapGesture = nil;
+        
     }
     return self;
+}
+
+#pragma mark - gesture Recognizer
+
+- (void)customRowTapped
+{
+    if ([tapDelegate respondsToSelector:@selector(TDCustomRowTapped)]) 
+    {
+    [self.tapDelegate TDCustomRowTapped];
+    }
 }
 
 #pragma mark - touch delegates

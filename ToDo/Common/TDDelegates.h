@@ -22,3 +22,7 @@
 - (void)TDCustomViewPulledDownWithNewRow:(TDListCustomRow *)newRow;
 - (BOOL)checkedRowsExist;
 @end
+
+@protocol TDCustomRowTappedDelegate<NSObject>
+- (void)TDCustomRowTapped;
+@end

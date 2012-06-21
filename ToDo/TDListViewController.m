@@ -23,6 +23,29 @@
     return self;
 }
 
+- (void)TDCustomRowTapped
+{
+    if ([super respondsToSelector:@selector(TDCustomRowTapped)]) {
+    // TO CHECK :[super TDCustomRowTapped];
+    }
+    [self perform];
+}
+
+- (void) perform {
+    
+    UIViewController *src = (UIViewController *) self;
+    TDViewController *destination = [self.storyboard instantiateViewControllerWithIdentifier:@"ItemViewController"];
+    
+    [UIView transitionWithView:src.navigationController.view duration:0.3
+                       options:UIViewAnimationTransitionCurlUp
+                    animations:^{
+                        [src.navigationController pushViewController:destination animated:YES];
+                    }
+                    completion:NULL];
+    
+}
+
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -38,6 +61,12 @@
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
 {
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+	[super viewWillAppear:animated];
+    [TDCommon setTheme:THEME_BLUE];
 }
 
 @end

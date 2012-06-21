@@ -7,11 +7,6 @@
 //
 
 #import "TDViewController.h"
-#import "TDCategory.h"
-#import "ToDoList.h"
-#import "TDScrollView.h"
-#import "TDListCustomRow.h"
-#import "TDCommon.h"
 
 @interface TDViewController(privateMethods)
 - (void)createUI;
@@ -43,7 +38,7 @@
     self.view.backgroundColor = [UIColor blackColor];
     self.listArray = [[NSMutableArray alloc] init];
     self.customViewsArray = [[NSMutableArray alloc] init];
-    [self getDataFromServer];
+    //[self getDataFromServer];                            // TODO :Fix Server 
     [self createUI];
     
 }
@@ -63,6 +58,15 @@
         }
     }
     return checkedRowFlag;
+}
+
+- (void)TDCustomRowTapped
+{
+    [self perform];
+}
+
+- (void)perform {
+
 }
 
 - (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId bySwipe:(BOOL)Flag
@@ -130,6 +134,7 @@
     tempArray = [[NSMutableArray alloc] initWithObjects:newRow, nil];
     newRow.tag = newList.listId; 
     newRow.delegate = self;
+    newRow.tapDelegate = self;
     [tempArray addObjectsFromArray:self.customViewsArray];
     self.customViewsArray = nil;
     self.customViewsArray = tempArray;
@@ -329,6 +334,7 @@
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    [TDCommon setTheme:THEME_HEAT_MAP];
 }
 
 - (void)viewDidAppear:(BOOL)animated

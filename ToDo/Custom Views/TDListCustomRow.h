@@ -27,6 +27,8 @@
 @property(nonatomic,retain) TDStrikedLabel *strikedLabel;
 @property(nonatomic,retain)UIColor *currentRowColor;
 @property(nonatomic,retain)UIView *doneOverlayView;
+@property(assign) id<TDCustomRowTappedDelegate> tapDelegate;
+
 - (void)makeStrikedLabel;
 - (void)makeCheckedIcon;
 - (void)customRowRightSwipe:(NSSet *)touches withEvent:(UIEvent*)event;

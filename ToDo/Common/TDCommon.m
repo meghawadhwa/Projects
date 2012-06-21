@@ -11,6 +11,8 @@
 
 @implementation TDCommon
 
+NSString *currentViewTheme = nil;
+
 - (id)init
 {
     self = [super init];
@@ -24,14 +26,34 @@
 +(UIColor *)getColorByPriority:(int)prioirity
 {
     UIColor *color;
-    if ([CURRENT_THEME isEqualToString:THEME_BLUE]) {
+    
+    if ([currentViewTheme isEqualToString:THEME_BLUE]) {
     color = [TDCommon getBlueColorByPriority:prioirity];
     }
-    else if ([CURRENT_THEME isEqualToString:THEME_HEAT_MAP])
+    else if ([currentViewTheme isEqualToString:THEME_HEAT_MAP])
     {
      color = [TDCommon getRedColorByPriority:prioirity];
     }
+    else if ([currentViewTheme isEqualToString:THEME_MAIN_GRAY]) {
+        color = [TDCommon getGrayColorByPriority:prioirity];
+    }
+   
     return color;
+}
+
++(UIColor *)getGrayColorByPriority:(int)prioirity
+{
+//    float red =  44/255; 
+//    float green = 44/255; 
+//    float blue = 44/255;  
+//    
+////    red += 0.012 *prioirity/2;
+////    green +=0.113 *prioirity/2;
+////    blue += 0.004 *prioirity/2;
+//    
+//    UIColor *color = [UIColor colorWithRed:red green:green blue:blue alpha:1];
+//    return color;
+    return [UIColor darkGrayColor];
 }
 
 +(UIColor *)getBlueColorByPriority:(int)prioirity
@@ -61,5 +83,16 @@
     UIColor *color = [UIColor colorWithRed:red green:green blue:blue alpha:1];
     return color;
 }
+
++ (NSString *)getTheme
+{
+    return currentViewTheme;
+}
+
++ (void)setTheme: (NSString *)myTheme
+{
+    currentViewTheme = myTheme;
+}
+
 
 @end
