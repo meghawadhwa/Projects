@@ -43,17 +43,16 @@ NSString *currentViewTheme = nil;
 
 +(UIColor *)getGrayColorByPriority:(int)prioirity
 {
-//    float red =  44/255; 
-//    float green = 44/255; 
-//    float blue = 44/255;  
-//    
-////    red += 0.012 *prioirity/2;
-////    green +=0.113 *prioirity/2;
-////    blue += 0.004 *prioirity/2;
-//    
-//    UIColor *color = [UIColor colorWithRed:red green:green blue:blue alpha:1];
-//    return color;
-    return [UIColor darkGrayColor];
+    float red =  0.250; 
+    float green = 0.250; 
+    float blue = 0.250;  
+    
+    red -= 0.026 *prioirity/2;
+    green -=0.026 *prioirity/2;
+    blue -= 0.026 *prioirity/2;
+    
+    UIColor *color = [UIColor colorWithRed:red green:green blue:blue alpha:1];
+    return color;
 }
 
 +(UIColor *)getBlueColorByPriority:(int)prioirity
