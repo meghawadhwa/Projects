@@ -83,6 +83,19 @@ NSString *currentViewTheme = nil;
     return color;
 }
 
+#pragma mark -Utility methods
+- (int)calculateLastIndexForArray:(NSMutableArray *)anyArray
+{
+    if (anyArray && [anyArray count] >0) {
+        int lastObjectIndex = 0;
+        if ([anyArray count] >1) {
+            lastObjectIndex = [anyArray count] -1;
+        }
+        return lastObjectIndex;
+    }
+    return nil;
+}
+
 + (NSString *)getTheme
 {
     return currentViewTheme;

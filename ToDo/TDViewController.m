@@ -6,13 +6,21 @@
 //  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
 //
 
+//listArray contains all TODOList's Model objects
+//doneArray contains all completed TODOList's Model Objects.
+//CustomViewsArray contains all custom rows
+//CheckedViewsArray contains all completed custom rows
+
+//listArray and CustomViewsArray are in sync
+//doneArray and CheckedViewsArray are in sync
+
+//indexArrays are used coz to clear the completed items,we can have more than one element to clear
+// that is why we pass an index array containing indexes of checked rows
+
 #import "TDViewController.h"
 
 @interface TDViewController(privateMethods)
 - (void)createUI;
-- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag bySwipe:(BOOL)Flag
-;
-- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
 - (void)shiftRowsFromIndex:(int)index;
 - (void)shiftRowsBackFromIndex:(int)index;
 - (void)rearrangeColorsBasedOnPrioirity; 
@@ -20,8 +28,8 @@
 
 @implementation TDViewController
 @synthesize backgroundScrollView;
-@synthesize listArray;
-@synthesize customViewsArray;
+@synthesize listArray,doneArray;
+@synthesize customViewsArray,checkedViewsArray;
 
 - (void)didReceiveMemoryWarning
 {
@@ -37,20 +45,35 @@
 	// Do any additional setup after loading the view, typically from a nib.
     self.view.backgroundColor = [UIColor blackColor];
     self.listArray = [[NSMutableArray alloc] init];
+    self.doneArray = [[NSMutableArray alloc] init];
+    self.checkedViewsArray = [[NSMutableArray alloc] init];
     self.customViewsArray = [[NSMutableArray alloc] init];
     //[self getDataFromServer];                            // TODO :Fix Server 
     [self createUI];
     
 }
+
+
+#pragma mark - Navigation 
+
+- (void)TDCustomRowTapped
+{
+    [self perform];
+}
+
+- (void)perform {
+    
+}
+
 #pragma mark -Delegates
 
 - (BOOL)checkedRowsExist
 {
     BOOL checkedRowFlag = FALSE;
-    int totalObjects = [self.listArray count];
+    int totalObjects = [self.doneArray count];
     for (int i =0; i<totalObjects; i++) 
     {
-        ToDoList *aListItem = [self.listArray objectAtIndex:i];
+        ToDoList *aListItem = [self.doneArray objectAtIndex:i];
         if (aListItem.doneStatus == TRUE) 
         {
             checkedRowFlag = TRUE;
@@ -60,17 +83,7 @@
     return checkedRowFlag;
 }
 
-- (void)TDCustomRowTapped
-{
-    [self perform];
-}
-
-- (void)perform {
-
-}
-
 - (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId bySwipe:(BOOL)Flag
-
 {
     int numberOfviews = [self.customViewsArray count];
     NSMutableArray *swipedIndexArray = [[NSMutableArray alloc] init];
@@ -81,26 +94,31 @@
         if(senderId == currentView.tag){  [swipedIndexArray addObject:[NSNumber numberWithInt:index]]; }   
     }
     if ([swipedIndexArray count]>0) {
-        [self rearrangeRowsAfterRemovingObjectAtIndex:swipedIndexArray withDeletionFlag:flag bySwipe:Flag];
+        if (Flag) {
+        [self rearrangeRowsAfterRemovingObjectAtIndex:swipedIndexArray withDeletionFlag:flag];
+        }
+        else {
+            [self rearrangeRowsAfterPullUpAtIndex:swipedIndexArray];
+        }
         // TODO: remove from Server also.
     }
 }
 
 - (void)TDCustomViewPulledUp
 {
-    int numberOfRows = [listArray count];
+    int numberOfRows = [self.doneArray count];
     NSMutableArray *checkedIndexArray = [[NSMutableArray alloc] init];
     for (int i = 0; i<numberOfRows; i++) 
     { 
-        ToDoList *currentList = [self.listArray objectAtIndex:i];
-        if (currentList.doneStatus == TRUE) 
+        ToDoList *currentList = [self.doneArray objectAtIndex:i];
+        if (currentList.doneStatus == TRUE)                             //******* TO REMOVE
         {
             [checkedIndexArray addObject:[NSNumber numberWithInt:i]];
             NSLog(@"index :%i",i);
         }
     }
     if ([checkedIndexArray count]>0) {
-        [self rearrangeRowsAfterRemovingObjectAtIndex:checkedIndexArray withDeletionFlag:YES bySwipe:NO];
+        [self rearrangeRowsAfterPullUpAtIndex:checkedIndexArray];
         // TODO: remove from Server also.
     }
 }
@@ -143,6 +161,7 @@
     [self rearrangeColorsBasedOnPrioirity];
 }
 
+#pragma mark - UI
 - (void)shiftRowsFromIndex:(int)index
 {
     // rearrange after the new row is added
@@ -164,7 +183,6 @@
     }
 }
 
-#pragma mark - UI
 // Prioirity is based on Index,Higher Index Lesser Priority,Lesser Color
 - (void)rearrangeColorsBasedOnPrioirity 
 {
@@ -178,13 +196,30 @@
             aRow.backgroundColor = [TDCommon getColorByPriority:i+1];
         }
     }
-    
 }
-- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag bySwipe:(BOOL)Flag
+
+//rearrangeRows after pull up and deleting all checked Rows
+-(void)rearrangeRowsAfterPullUpAtIndex:(NSMutableArray*)indexArray
+{
+    int lastObjectIndex = [TDCommon calculateLastIndexForArray:indexArray];
+    for (int i =lastObjectIndex; i>=0; i--) 
+    {
+        TDListCustomRow *RowToBeMoved = [self.checkedViewsArray objectAtIndex:i];
+        [UIView animateWithDuration:0.3 animations:^{
+                RowToBeMoved.frame = CGRectMake(0, 480, ROW_WIDTH, ROW_HEIGHT);
+            }];
+        [RowToBeMoved performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.3];
+        [self.checkedViewsArray removeObjectAtIndex:i];
+    }
+    
+    [self rearrangeListObjectsAfterPullUpWithIndex:indexArray];
+}
+
+- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag
 {
     NSLog(@"array here %@",self.customViewsArray);
-    int lastObjectIndex = [indexArray count] -1;
-    for (int i =lastObjectIndex; i>=0; i--) 
+    int lastIndex = [indexArray count] -1;
+    for (int i =lastIndex; i>=0; i--) 
     {
         int index = [[indexArray objectAtIndex:i] intValue];
         int lastObjectIndex = [self.customViewsArray count]-1;
@@ -193,16 +228,10 @@
         if (flag == TRUE)     // deleted row to be removed from view
         {
             [UIView animateWithDuration:0.3 animations:^{
-                if (Flag == YES) {
                     RowToBeMoved.frame = CGRectMake(-ROW_WIDTH, RowToBeMoved.frame.origin.y, ROW_WIDTH, ROW_HEIGHT);
-                }
-                else{
-                    RowToBeMoved.frame = CGRectMake(0, 480, ROW_WIDTH, ROW_HEIGHT);
-                }
             }];
             [RowToBeMoved performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.3];
         }   
-        
         
         if (index < lastObjectIndex) // Not the last object
         {
@@ -225,51 +254,18 @@
             [self.customViewsArray removeObjectAtIndex:index];
             [UIView animateWithDuration:0.5 animations:^{
                 TDListCustomRow *lastRow = [self.customViewsArray lastObject];
-                
                 [self.backgroundScrollView bringSubviewToFront:RowToBeMoved];
                 RowToBeMoved.frame =CGRectMake(0, lastRow.frame.origin.y + lastRow.frame.size.height, RowToBeMoved.frame.size.width, RowToBeMoved.frame.size.height);
                 RowToBeMoved.backgroundColor = [UIColor colorWithRed:0.20 green:0.20 blue:0.20 alpha:1];
             }];
             RowToBeMoved.listTextField.textColor = [UIColor grayColor];
-            [self.customViewsArray addObject:RowToBeMoved];
+            [self.checkedViewsArray addObject:RowToBeMoved];
         }
     }
+
     [self rearrangeListObjectsAfterRemovingObjectAtIndex:indexArray withDeletionFlag:flag];
     [self rearrangeColorsBasedOnPrioirity];
-    NSLog(@"array now %@",self.customViewsArray);
-}
-
-
-- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag
-{
-    NSLog(@"array before %@",self.listArray);
-    int lastObjectIndex = [indexArray count] -1;
-    for (int i =lastObjectIndex; i>=0; i--) 
-    {
-        int index = [[indexArray objectAtIndex:i] intValue];
-        
-        if (flag == TRUE) 
-        {                                   // TODO: DELETE WEB SERVICE CALL
-            [self.listArray removeObjectAtIndex:index];
-        } 
-        else
-        {
-            ToDoList *listToBeMoved = [self.listArray objectAtIndex:index];
-            if (listToBeMoved.doneStatus == TRUE) {
-                // listToBeMoved.doneStatus =FALSE;
-            }
-            else
-            {
-                listToBeMoved.doneStatus = TRUE;
-            }
-            [self.listArray removeObjectAtIndex:index];
-            [self.listArray addObject:listToBeMoved];
-            // TODO: update WEB SERVICE CALL
-            // checked
-            //TODO:delete after pull
-        }
-    }
-    NSLog(@"array now %@",self.listArray);
+    NSLog(@"array now %@ chkd views array : %@",self.customViewsArray,self.checkedViewsArray);
 }
 
 - (void)createUI
@@ -299,6 +295,51 @@
     NSLog(@"array now %@",self.customViewsArray);
 }
 
+#pragma mark - Change Models
+
+- (void)rearrangeListObjectsAfterPullUpWithIndex:(NSMutableArray*)indexArray
+{
+    NSLog(@"array before %@",self.doneArray);
+    int lastObjectIndex = [TDCommon calculateLastIndexForArray:indexArray];
+    for (int i =lastObjectIndex; i>=0; i--) 
+    {
+        // TODO: DELETE WEB SERVICE CALL
+        [self.doneArray removeObjectAtIndex:i];
+    }
+    NSLog(@"array before %@",self.doneArray);
+} 
+
+- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag
+{
+    NSLog(@"array before %@",self.listArray);
+    int lastObjectIndex = [TDCommon calculateLastIndexForArray:indexArray];
+    for (int i =lastObjectIndex; i>=0; i--) 
+    {
+        int index = [[indexArray objectAtIndex:i] intValue];
+        
+        if (flag == TRUE) 
+        {                                   // TODO: DELETE WEB SERVICE CALL
+            [self.listArray removeObjectAtIndex:index];
+        } 
+        else
+        {
+            ToDoList *listToBeMoved = [self.listArray objectAtIndex:index];
+            if (listToBeMoved.doneStatus == TRUE) {
+                // listToBeMoved.doneStatus =FALSE;
+            }
+            else
+            {
+                listToBeMoved.doneStatus = TRUE;
+            }
+            [self.listArray removeObjectAtIndex:index];
+            [self.doneArray addObject:listToBeMoved];
+            // TODO: update WEB SERVICE CALL
+            // checked
+            //TODO:delete after pull
+        }
+    }
+    NSLog(@"array now %@ done array %@",self.listArray,self.doneArray);
+}
 
 # pragma mark - FETCH  DATA FROM SERVER
 - (void)getDataFromServer

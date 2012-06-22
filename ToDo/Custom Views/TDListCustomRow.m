@@ -226,7 +226,7 @@
 {
     if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)])
     {
-    [delegate TDCustomRowToBeDeleted:FALSE WithId:self.tag bySwipe:NO ];
+    [delegate TDCustomRowToBeDeleted:FALSE WithId:self.tag bySwipe:YES ];
     }
 }
 - (void)deleteRow

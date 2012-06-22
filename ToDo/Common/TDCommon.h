@@ -14,5 +14,6 @@
 +(UIColor *)getRedColorByPriority:(int)prioirity;
 + (NSString *)getTheme;
 + (void)setTheme: (NSString *)myTheme;
++ (int)calculateLastIndexForArray:(NSMutableArray *)anyArray;
 
 @end

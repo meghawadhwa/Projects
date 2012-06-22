@@ -22,7 +22,14 @@
 @interface TDViewController : UIViewController<TDCustomRowSwipedDelegate,UITextFieldDelegate,TDCustomViewPulledDelegate,TDCustomRowTappedDelegate>
 @property(nonatomic,retain)TDScrollView *backgroundScrollView;
 @property(nonatomic,retain) NSMutableArray *listArray;
+@property(nonatomic,retain) NSMutableArray *doneArray;
 @property(nonatomic,retain) NSMutableArray *customViewsArray;
+@property(nonatomic,retain) NSMutableArray *checkedViewsArray;
+
 - (void)getDataFromServer;
+- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
+- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
+-(void)rearrangeRowsAfterPullUpAtIndex:(NSMutableArray*)indexArray;
+- (void)rearrangeListObjectsAfterPullUpWithIndex:(NSMutableArray*)indexArray;
 @end
 
