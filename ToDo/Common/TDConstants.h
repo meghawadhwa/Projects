@@ -20,4 +20,7 @@
 #define THEME_BLUE @"Blue" 
 #define THEME_HEAT_MAP @"heatMap"
 #define THEME_MAIN_GRAY @"Grey"
-
+#define DELETION_DELAY 0.1
+#define CHECKING_DELAY 0.0
+#define DELETING_ROW_ANIMATION_DURATION 0.3 
+#define ROWS_SHIFTING_DURATION 0.5

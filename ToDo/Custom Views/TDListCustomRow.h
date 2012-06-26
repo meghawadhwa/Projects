@@ -25,7 +25,7 @@
 @property(nonatomic,assign) BOOL swipeDetected;
 @property(nonatomic,assign) BOOL doneStatus;
 @property(nonatomic,retain) TDStrikedLabel *strikedLabel;
-@property(nonatomic,retain)UIColor *currentRowColor;
+@property(nonatomic,retain)UIColor *defaultRowColor;
 @property(nonatomic,retain)UIView *doneOverlayView;
 @property(assign) id<TDCustomRowTappedDelegate> tapDelegate;
 

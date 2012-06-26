@@ -27,8 +27,8 @@
 @property(nonatomic,retain) NSMutableArray *checkedViewsArray;
 
 - (void)getDataFromServer;
-- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
-- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag;
+- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag fromRequiredArray:(NSMutableArray*) requiredArray;
+- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag fromModelArray:(NSMutableArray *)modelArray;
 -(void)rearrangeRowsAfterPullUpAtIndex:(NSMutableArray*)indexArray;
 - (void)rearrangeListObjectsAfterPullUpWithIndex:(NSMutableArray*)indexArray;
 @end

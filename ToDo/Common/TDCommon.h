@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TDListCustomRow.h"
 
 @interface TDCommon : NSObject
 +(UIColor *)getColorByPriority:(int)prioirity;
@@ -15,5 +16,5 @@
 + (NSString *)getTheme;
 + (void)setTheme: (NSString *)myTheme;
 + (int)calculateLastIndexForArray:(NSMutableArray *)anyArray;
-
++ (void)setDoneStatus:(TDListCustomRow *)RowSwiped;
 @end

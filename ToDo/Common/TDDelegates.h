@@ -14,7 +14,7 @@
 @end
 
 @protocol TDCustomRowSwipedDelegate<NSObject>
-- (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId bySwipe:(BOOL)Flag;
+- (void)TDCustomRowToBeDeleted:(BOOL)flag With:(TDListCustomRow *)senderRow bySwipe:(BOOL)Flag;
 @end
 
 @protocol TDCustomViewPulledDelegate<NSObject>

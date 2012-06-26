@@ -22,8 +22,11 @@
 @interface TDViewController(privateMethods)
 - (void)createUI;
 - (void)shiftRowsFromIndex:(int)index;
-- (void)shiftRowsBackFromIndex:(int)index;
+- (void)shiftRowsBackFromIndex:(int)index withDeletionFlag:(BOOL)flag;
 - (void)rearrangeColorsBasedOnPrioirity; 
+- (void)animateRowsAfterDeletionAtIndex:(int)index FromArray:(NSMutableArray *) requiredArray withDeletionFlag: (BOOL)flag;
+- (void)moveCheckedRowsUptoIndex:(int)index WithDeletionFlag:(BOOL) flag;
+- (void)moveCheckedRowsDown;
 @end
 
 @implementation TDViewController
@@ -52,7 +55,6 @@
     [self createUI];
     
 }
-
 
 #pragma mark - Navigation 
 
@@ -83,23 +85,49 @@
     return checkedRowFlag;
 }
 
-- (void)TDCustomRowToBeDeleted:(BOOL)flag WithId:(int)senderId bySwipe:(BOOL)Flag
+- (void)TDCustomRowToBeDeleted:(BOOL)flag With:(TDListCustomRow *)senderRow bySwipe:(BOOL)Flag
 {
-    int numberOfviews = [self.customViewsArray count];
+    TDListCustomRow * currentView = (TDListCustomRow *)senderRow;
+   //depending on checked or unchecked row ,checked or custom views array is selected
+    NSMutableArray * requiredArray , *modelArray;
+    if(currentView.doneStatus == TRUE) { 
+        requiredArray = self.checkedViewsArray;
+        modelArray = self.doneArray;
+    }
+    else { 
+        requiredArray =self.customViewsArray ;
+        modelArray = self.listArray;
+    }
+    
+    int numberOfviews = [requiredArray count];
     NSMutableArray *swipedIndexArray = [[NSMutableArray alloc] init];
     int index;
     for (index = 0; index< numberOfviews; index++) 
     {
-        TDListCustomRow * currentView = [self.customViewsArray objectAtIndex:index];  
-        if(senderId == currentView.tag){  [swipedIndexArray addObject:[NSNumber numberWithInt:index]]; }   
+        TDListCustomRow * currentView = [requiredArray objectAtIndex:index];  
+        if(senderRow.tag == currentView.tag){  
+        [swipedIndexArray addObject:[NSNumber numberWithInt:index]];
+            break;
+        }
     }
     if ([swipedIndexArray count]>0) {
-        if (Flag) {
-        [self rearrangeRowsAfterRemovingObjectAtIndex:swipedIndexArray withDeletionFlag:flag];
+        // If current Row is checked And it is not suppossed to be deleted
+        if (currentView.doneStatus && !flag)
+        {
+            [self rearrangeRowsAfterUnChekingAtIndex:[[swipedIndexArray lastObject]intValue]];
+            [TDCommon setDoneStatus:currentView];
+
         }
         else {
-            [self rearrangeRowsAfterPullUpAtIndex:swipedIndexArray];
+            if (Flag) {
+                [self rearrangeRowsAfterRemovingObjectAtIndex:swipedIndexArray withDeletionFlag:flag fromRequiredArray:requiredArray];
+            }
+            else {
+                [self rearrangeRowsAfterPullUpAtIndex:swipedIndexArray];
+            }
         }
+        [self rearrangeListObjectsAfterRemovingObjectAtIndex:swipedIndexArray withDeletionFlag:flag fromModelArray:modelArray];
+        [self rearrangeColorsBasedOnPrioirity];
         // TODO: remove from Server also.
     }
 }
@@ -162,23 +190,25 @@
 }
 
 #pragma mark - UI
+
 - (void)shiftRowsFromIndex:(int)index
 {
     // rearrange after the new row is added
+    
 }
 
-- (void)shiftRowsBackFromIndex:(int)index
+- (void)shiftRowsBackFromIndex:(int)index withDeletionFlag:(BOOL)flag
 {
     int lastObjectIndex = [self.customViewsArray count]-1;
-    if (index < lastObjectIndex) // Not the last object
-    {
-        for (int i = lastObjectIndex; i > index; i--)  // transfer frames from last to current
-        {
+    if (index < lastObjectIndex){ // Not the last object
+        for (int i = lastObjectIndex; i > index; i--) { // transfer frames from last to current
             TDListCustomRow *Row = [self.customViewsArray objectAtIndex:i];
             TDListCustomRow *previousRow = [self.customViewsArray objectAtIndex:i-1];
-            [UIView animateWithDuration:0.8 animations:^{
-                Row.frame = CGRectMake(0, previousRow.frame.origin.y, previousRow.frame.size.width, previousRow.frame.size.height);
-            }]; 
+            float delay;
+            if (flag == TRUE) delay = DELETION_DELAY;  
+            else delay =CHECKING_DELAY;
+            [UIView animateWithDuration:ROWS_SHIFTING_DURATION delay:delay options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                Row.frame = CGRectMake(0, previousRow.frame.origin.y, previousRow.frame.size.width, previousRow.frame.size.height);} completion:nil]; 
         }
     }
 }
@@ -194,6 +224,7 @@
         {
             TDListCustomRow *aRow = [self.customViewsArray objectAtIndex:i];
             aRow.backgroundColor = [TDCommon getColorByPriority:i+1];
+            aRow.defaultRowColor = aRow.backgroundColor;
         }
     }
 }
@@ -205,69 +236,159 @@
     for (int i =lastObjectIndex; i>=0; i--) 
     {
         TDListCustomRow *RowToBeMoved = [self.checkedViewsArray objectAtIndex:i];
-        [UIView animateWithDuration:0.3 animations:^{
+        [UIView animateWithDuration:DELETING_ROW_ANIMATION_DURATION animations:^{
                 RowToBeMoved.frame = CGRectMake(0, 480, ROW_WIDTH, ROW_HEIGHT);
             }];
-        [RowToBeMoved performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.3];
+        [RowToBeMoved performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:DELETING_ROW_ANIMATION_DURATION];
         [self.checkedViewsArray removeObjectAtIndex:i];
     }
-    
     [self rearrangeListObjectsAfterPullUpWithIndex:indexArray];
 }
 
-- (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag
+- (void)rearrangeRowsAfterUnChekingAtIndex:(int)index
 {
-    NSLog(@"array here %@",self.customViewsArray);
+    NSLog(@"array checked %@ array custom %@",self.checkedViewsArray,self.customViewsArray);
+     TDListCustomRow * lastCustomRow = [self.customViewsArray lastObject];
+    
+    TDListCustomRow *RowToBeMoved = [self.checkedViewsArray objectAtIndex:index];
+    BOOL lastCheckedFlag = (RowToBeMoved == [self.checkedViewsArray lastObject]);
+    [[RowToBeMoved superview] bringSubviewToFront:RowToBeMoved];
+    
+    [self.customViewsArray addObject:RowToBeMoved];
+       
+    if (!lastCheckedFlag) { //NO need to move the last checked row
+        [self moveCheckedRowsUptoIndex:index WithDeletionFlag:YES];
+        [self.checkedViewsArray removeObjectAtIndex:index];
+
+        if (lastCustomRow) {
+            [UIView animateWithDuration:ROWS_SHIFTING_DURATION animations:^{
+                RowToBeMoved.frame = CGRectMake(0, lastCustomRow.frame.origin.y + ROW_HEIGHT, ROW_WIDTH, ROW_HEIGHT);
+            }];
+        }
+        else {
+            [UIView animateWithDuration:ROWS_SHIFTING_DURATION animations:^{
+                RowToBeMoved.frame = CGRectMake(0, 0, ROW_WIDTH, ROW_HEIGHT);
+            }];
+        }
+        //Re Arrange the checked Rows From and after that Index
+        [self moveCheckedRowsDown];
+    }
+    else {
+        [self.checkedViewsArray removeObjectAtIndex:index];
+    }
+    
+}
+
+ - (void)rearrangeRowsAfterRemovingObjectAtIndex:(NSMutableArray *)indexArray withDeletionFlag:(BOOL)flag fromRequiredArray:(NSMutableArray *)requiredArray
+{
+    NSLog(@"array here %@",requiredArray);
     int lastIndex = [indexArray count] -1;
     for (int i =lastIndex; i>=0; i--) 
     {
         int index = [[indexArray objectAtIndex:i] intValue];
-        int lastObjectIndex = [self.customViewsArray count]-1;
-        TDListCustomRow *RowToBeMoved = [self.customViewsArray objectAtIndex:index];
+        
+        TDListCustomRow *RowToBeMoved = [requiredArray objectAtIndex:index];
         
         if (flag == TRUE)     // deleted row to be removed from view
         {
-            [UIView animateWithDuration:0.3 animations:^{
+            [UIView animateWithDuration:DELETING_ROW_ANIMATION_DURATION animations:^{
                     RowToBeMoved.frame = CGRectMake(-ROW_WIDTH, RowToBeMoved.frame.origin.y, ROW_WIDTH, ROW_HEIGHT);
             }];
-            [RowToBeMoved performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:0.3];
+            [RowToBeMoved performSelector:@selector(removeFromSuperview) withObject:nil afterDelay:DELETING_ROW_ANIMATION_DURATION];
         }   
         
-        if (index < lastObjectIndex) // Not the last object
-        {
-            for (int i = lastObjectIndex; i > index; i--)  // transfer frames from last to current
-            {
-                TDListCustomRow *Row = [self.customViewsArray objectAtIndex:i];
-                TDListCustomRow *previousRow = [self.customViewsArray objectAtIndex:i-1];
-                float delay;
-                if (flag == TRUE) { delay = 0.3; } 
-                else {delay =0.0;}
-                [UIView animateWithDuration:0.8 delay:delay options:UIViewAnimationOptionCurveEaseInOut animations:^{
-                    Row.frame = CGRectMake(0, previousRow.frame.origin.y, previousRow.frame.size.width, previousRow.frame.size.height);} completion:nil]; 
-            }
-        }
-        if (flag == TRUE) {    // deleted row to be removed from custom views array
-            [self.customViewsArray removeObjectAtIndex:index];
+        [self animateRowsAfterDeletionAtIndex:index FromArray:requiredArray withDeletionFlag:flag];
+        
+               if (flag == TRUE) {    // deleted row to be removed from custom views array
+            [requiredArray removeObjectAtIndex:index];
         }
         else
         {
-            [self.customViewsArray removeObjectAtIndex:index];
+            [requiredArray removeObjectAtIndex:index];
             [UIView animateWithDuration:0.5 animations:^{
-                TDListCustomRow *lastRow = [self.customViewsArray lastObject];
+                TDListCustomRow *lastRow = [requiredArray lastObject];
                 [self.backgroundScrollView bringSubviewToFront:RowToBeMoved];
                 RowToBeMoved.frame =CGRectMake(0, lastRow.frame.origin.y + lastRow.frame.size.height, RowToBeMoved.frame.size.width, RowToBeMoved.frame.size.height);
-                RowToBeMoved.backgroundColor = [UIColor colorWithRed:0.20 green:0.20 blue:0.20 alpha:1];
+                
             }];
-            RowToBeMoved.listTextField.textColor = [UIColor grayColor];
-            [self.checkedViewsArray addObject:RowToBeMoved];
-        }
+            [TDCommon setDoneStatus:RowToBeMoved];
+            if (RowToBeMoved.doneStatus)
+            {
+                [self.checkedViewsArray addObject:RowToBeMoved];
+                RowToBeMoved.listTextField.textColor = [UIColor grayColor];
+                RowToBeMoved.backgroundColor = [UIColor colorWithRed:0.20 green:0.20 blue:0.20 alpha:1];
+            }
+            else 
+            {
+                [self.customViewsArray addObject:RowToBeMoved];
+                RowToBeMoved.listTextField.textColor = [UIColor grayColor];
+            }
+            }
     }
 
-    [self rearrangeListObjectsAfterRemovingObjectAtIndex:indexArray withDeletionFlag:flag];
-    [self rearrangeColorsBasedOnPrioirity];
     NSLog(@"array now %@ chkd views array : %@",self.customViewsArray,self.checkedViewsArray);
 }
 
+- (void)animateRowsAfterDeletionAtIndex:(int)index FromArray:(NSMutableArray *) requiredArray withDeletionFlag:(BOOL)flag
+{
+
+    if (requiredArray != self.checkedViewsArray) {
+        if (flag) {
+        int lastCheckedObjectIndex = [self.checkedViewsArray count]-1;  //First Move ALL Checked Rows Up-Frm ChckdViewarray
+        TDListCustomRow * lastCheckedRow = [self.checkedViewsArray lastObject];
+        TDListCustomRow *lastCustomRow = [self.customViewsArray lastObject];
+        [self moveCheckedRowsUptoIndex:lastCheckedObjectIndex WithDeletionFlag:flag];
+        [UIView animateWithDuration:ROWS_SHIFTING_DURATION delay:DELETION_DELAY options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                lastCheckedRow.frame = CGRectMake(0, lastCustomRow.frame.origin.y, lastCustomRow.frame.size.width, lastCustomRow.frame.size.height);} completion:nil]; 
+        }
+        //Then Move Custom Unchecked Rows Up till the required Index
+        [self shiftRowsBackFromIndex:index withDeletionFlag:flag];
+     
+    }    
+    else [self moveCheckedRowsUptoIndex:index WithDeletionFlag:flag];
+}
+
+- (void)moveCheckedRowsUptoIndex:(int)index WithDeletionFlag:(BOOL) flag 
+{
+    for (int i = 0; i < index; i++)  // transfer frames from first to current
+    {
+        TDListCustomRow *Row = [self.checkedViewsArray objectAtIndex:i];
+        TDListCustomRow *nextRow = [self.checkedViewsArray objectAtIndex:i+1];
+        float delay;
+        if (flag == TRUE) delay = DELETION_DELAY;  
+        else delay =CHECKING_DELAY;
+        [UIView animateWithDuration:ROWS_SHIFTING_DURATION delay:delay options:UIViewAnimationOptionCurveEaseInOut animations:^{
+            Row.frame = CGRectMake(0, nextRow.frame.origin.y, nextRow.frame.size.width, nextRow.frame.size.height);} completion:nil]; 
+    }
+}
+- (void) moveCheckedRowsDown
+{
+    TDListCustomRow *lastCustomRow = [self.customViewsArray lastObject];
+    
+    int lastCheckedObjectIndex = [self.checkedViewsArray count]-1;
+    
+    TDListCustomRow * lastCheckedRow = [self.checkedViewsArray lastObject];
+    
+    if (lastCustomRow) {
+        [UIView animateWithDuration:ROWS_SHIFTING_DURATION animations:^{
+            lastCheckedRow.frame = CGRectMake(0, lastCustomRow.frame.origin.y + ROW_HEIGHT, ROW_WIDTH, ROW_HEIGHT);
+        }];
+    }
+    else {
+        [UIView animateWithDuration:ROWS_SHIFTING_DURATION animations:^{
+            lastCheckedRow.frame = CGRectMake(0, 0, ROW_WIDTH, ROW_HEIGHT);
+        }];
+    }
+
+    //[self moveCheckedRowsUptoIndex:lastCheckedObjectIndex WithDeletionFlag:YES];
+    
+    for (int index = lastCheckedObjectIndex -1 ; index >= 0; index--) {
+        TDListCustomRow *checkedRow = [self.checkedViewsArray objectAtIndex:index];
+        
+        [UIView animateWithDuration:ROWS_SHIFTING_DURATION delay:CHECKING_DELAY options:UIViewAnimationOptionCurveEaseInOut animations:^{
+           checkedRow.frame = CGRectMake(0, checkedRow.frame.origin.y +ROW_HEIGHT, ROW_WIDTH, ROW_HEIGHT);} completion:nil]; 
+    }
+}
 - (void)createUI
 {
     /************** background scrollview *************/
@@ -309,9 +430,9 @@
     NSLog(@"array before %@",self.doneArray);
 } 
 
-- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag
+- (void)rearrangeListObjectsAfterRemovingObjectAtIndex:(NSMutableArray*)indexArray withDeletionFlag:(BOOL)flag fromModelArray:(NSMutableArray *)modelArray
 {
-    NSLog(@"array before %@",self.listArray);
+    NSLog(@"array before %@",modelArray);
     int lastObjectIndex = [TDCommon calculateLastIndexForArray:indexArray];
     for (int i =lastObjectIndex; i>=0; i--) 
     {
@@ -319,20 +440,25 @@
         
         if (flag == TRUE) 
         {                                   // TODO: DELETE WEB SERVICE CALL
-            [self.listArray removeObjectAtIndex:index];
+            [modelArray removeObjectAtIndex:index];
         } 
         else
         {
-            ToDoList *listToBeMoved = [self.listArray objectAtIndex:index];
+            ToDoList *listToBeMoved = [modelArray objectAtIndex:index];
             if (listToBeMoved.doneStatus == TRUE) {
-                // listToBeMoved.doneStatus =FALSE;
+                 listToBeMoved.doneStatus =FALSE;
             }
             else
             {
                 listToBeMoved.doneStatus = TRUE;
             }
-            [self.listArray removeObjectAtIndex:index];
+            [modelArray removeObjectAtIndex:index];
+            if (listToBeMoved.doneStatus == TRUE) {
             [self.doneArray addObject:listToBeMoved];
+            }
+            else {
+                [self.listArray addObject:listToBeMoved];
+            }
             // TODO: update WEB SERVICE CALL
             // checked
             //TODO:delete after pull

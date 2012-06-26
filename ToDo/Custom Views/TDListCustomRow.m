@@ -19,7 +19,7 @@
 @synthesize initialCentre;
 @synthesize rightSwipeDetected,leftSwipeDetected;
 @synthesize strikedLabel;
-@synthesize currentRowColor;
+@synthesize defaultRowColor;
 @synthesize PullDetected,swipeDetected;
 @synthesize startPoint;
 @synthesize doneStatus;
@@ -40,7 +40,7 @@
         self.listTextField = listField;
         [self addSubview:self.listTextField];
         self.backgroundColor=[TDCommon getColorByPriority:1];  // default color value;
-        self.currentRowColor = self.backgroundColor;
+        self.defaultRowColor = self.backgroundColor;
         self.doneStatus = FALSE;
         [self setUserInteractionEnabled:YES];
         [self  makeDeleteIcon];
@@ -73,7 +73,7 @@
     leftSwipeDetected = NO;
     [[self superview] touchesBegan:touches withEvent:event];
     PullDetected = NO;
-      self.currentRowColor = self.backgroundColor;
+      self.defaultRowColor = self.backgroundColor;
     UITouch *touch = [touches anyObject];
      startPoint = [touch locationInView:self];
 }
@@ -139,20 +139,20 @@
      
       else  if (prevTouchPosition.x < currentTouchPosition.x && rightSwipeDetected == NO)
             {
-//                if (self.doneStatus == TRUE) {
-//                    self.backgroundColor = self.currentRowColor;
-//                    self.listTextField.textColor = [UIColor whiteColor];
-//                    [self.strikedLabel removeFromSuperview];
-//                    self.strikedLabel = nil;
-//                }
-//                else
-//                {
-//                self.listTextField.textColor = [UIColor grayColor];
-               // self.currentRowColor = self.backgroundColor;
+                  if (self.doneStatus == TRUE) {
+                      self.backgroundColor = self.defaultRowColor;
+                      self.listTextField.textColor = [UIColor whiteColor];
+                      [self.strikedLabel removeFromSuperview];
+                      self.strikedLabel = nil;
+                  }
+                 else
+                 {
+                self.listTextField.textColor = [UIColor grayColor];
+               // self.defaultRowColor = self.backgroundColor;
                 self.backgroundColor = [UIColor colorWithRed:0.082 green:0.71 blue:0.11 alpha:1]; 
-                [self makeStrikedLabel]; //TODO: make it non editable after checked
+                [self makeStrikedLabel];       //TODO: make it non editable after checked
                  [self addSubview:self.strikedLabel];
-//                }
+                }
                 leftSwipeDetected = YES;
                 PullDetected = NO;
             }
@@ -169,9 +169,9 @@
             if(leftSwipeDetected == YES)
             {
                 NSLog(@"here");
-                self.backgroundColor = self.currentRowColor;
-                self.listTextField.textColor = [UIColor whiteColor];
-                [self.strikedLabel removeFromSuperview];    
+//                self.backgroundColor = self.defaultRowColor;
+//                self.listTextField.textColor = [UIColor whiteColor];
+//                [self.strikedLabel removeFromSuperview];    
                 leftSwipeDetected = NO;
             }
         }
@@ -224,16 +224,16 @@
 
 - (void)checkRow
 {
-    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)])
+    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:With:bySwipe:)])
     {
-    [delegate TDCustomRowToBeDeleted:FALSE WithId:self.tag bySwipe:YES ];
+    [delegate TDCustomRowToBeDeleted:FALSE With:self bySwipe:YES ];
     }
 }
 - (void)deleteRow
 {
-    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)])
+    if ([delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:With:bySwipe:)])
     {
-    [delegate TDCustomRowToBeDeleted:TRUE WithId:self.tag bySwipe:YES];
+    [delegate TDCustomRowToBeDeleted:TRUE With:self bySwipe:YES];
     }
 }
 
@@ -274,7 +274,7 @@
 {
     [self.listTextField resignFirstResponder];
     if ([self.listTextField.text isEqualToString:@""] && [delegate respondsToSelector:@selector(TDCustomRowToBeDeleted:WithId:bySwipe:)]) {
-        [delegate TDCustomRowToBeDeleted:YES WithId:self.tag bySwipe:YES];
+        [delegate TDCustomRowToBeDeleted:YES With:self bySwipe:YES];
     }
     else
     {

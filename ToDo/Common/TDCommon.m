@@ -84,7 +84,7 @@ NSString *currentViewTheme = nil;
 }
 
 #pragma mark -Utility methods
-- (int)calculateLastIndexForArray:(NSMutableArray *)anyArray
++ (int)calculateLastIndexForArray:(NSMutableArray *)anyArray
 {
     if (anyArray && [anyArray count] >0) {
         int lastObjectIndex = 0;
@@ -94,6 +94,14 @@ NSString *currentViewTheme = nil;
         return lastObjectIndex;
     }
     return nil;
+}
+
++ (void)setDoneStatus:(TDListCustomRow *)RowSwiped
+{
+    if (RowSwiped.doneStatus == TRUE) {
+        RowSwiped.doneStatus = FALSE;
+    }
+    else RowSwiped.doneStatus = TRUE;
 }
 
 + (NSString *)getTheme
